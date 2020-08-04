@@ -2,6 +2,7 @@
 #define COLOR_H
 
 #include "rtweekend.h"
+#include "vec3.hpp"
 
 #include <iostream>
 
