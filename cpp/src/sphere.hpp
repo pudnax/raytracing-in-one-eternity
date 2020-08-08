@@ -2,12 +2,15 @@
 #define SPHERE_HPP
 
 #include "hittable.hpp"
+#include "rtweekend.h"
 #include "vec3.hpp"
+#include <memory>
 
 class sphere : public hittable {
 public:
   sphere() {}
-  sphere(point3 cen, double r) : center(cen), radius(r) {}
+  sphere(point3 cen, double r, shared_ptr<material> m)
+      : center(cen), radius(r), mat_ptr(m) {}
 
   virtual bool hit(const ray &r, double tmin, double tmax,
                    hit_record &rec) const override;
@@ -15,6 +18,7 @@ public:
 public:
   point3 center;
   double radius;
+  shared_ptr<material> mat_ptr;
 };
 
 bool sphere::hit(const ray &r, double tmin, double tmax,
@@ -34,6 +38,7 @@ bool sphere::hit(const ray &r, double tmin, double tmax,
       rec.p = r.at(rec.t);
 	  vec3 outward_normal = (rec.p - center) /radius;
 	  rec.set_face_normal(r, outward_normal);
+	  rec.mat_ptr = mat_ptr;
       return true;
     }
 
@@ -44,6 +49,7 @@ bool sphere::hit(const ray &r, double tmin, double tmax,
       rec.p = r.at(rec.t);
 	  vec3 outward_normal = (rec.p - center) /radius;
 	  rec.set_face_normal(r, outward_normal);
+	  rec.mat_ptr = mat_ptr;
       return true;
     }
   }
