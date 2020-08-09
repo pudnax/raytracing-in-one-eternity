@@ -10,7 +10,7 @@ public:
   camera(point3 lookfrom, point3 lookat, vec3 vup, double vfov,
          double aspect_ratio, double aperture, double focus_dist, double t0,
          double t1) {
-    auto theta = degrees_to_redians(vfov);
+    auto theta = degrees_to_radians(vfov);
     auto h = tan(theta / 2.);
     auto viewport_height = 2.0 * h;
     auto viewport_width = aspect_ratio * viewport_height;
