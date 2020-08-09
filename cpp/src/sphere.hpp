@@ -4,7 +4,13 @@
 #include "hittable.hpp"
 #include "rtweekend.h"
 #include "vec3.hpp"
-#include <memory>
+
+void get_sphere_uv(const vec3 &p, double &u, double v) {
+  auto phi = std::atan2(p.z(), p.x());
+  auto theta = std::asin(p.y());
+  u = 1 - (phi + pi) / (2 * pi);
+  v = (theta + pi / 2) / pi;
+}
 
 class sphere : public hittable {
 public:
@@ -40,6 +46,7 @@ bool sphere::hit(const ray &r, double tmin, double tmax,
       rec.p = r.at(rec.t);
 	  vec3 outward_normal = (rec.p - center) /radius;
 	  rec.set_face_normal(r, outward_normal);
+	  get_sphere_uv((rec.p - center)/radius, rec.u, rec.v);
 	  rec.mat_ptr = mat_ptr;
       return true;
     }
@@ -51,6 +58,7 @@ bool sphere::hit(const ray &r, double tmin, double tmax,
       rec.p = r.at(rec.t);
 	  vec3 outward_normal = (rec.p - center) /radius;
 	  rec.set_face_normal(r, outward_normal);
+	  get_sphere_uv((rec.p - center)/radius, rec.u, rec.v);
 	  rec.mat_ptr = mat_ptr;
       return true;
     }
