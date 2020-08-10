@@ -7,7 +7,7 @@ pub struct Ray {
 }
 
 impl Ray {
-    pub fn point_at_parametr(&self, f: f32) -> Vec3 {
-        self.origin
+    pub fn point_at_parametr(&self, t: f32) -> Vec3 {
+        self.origin + t * self.direction
     }
 }
