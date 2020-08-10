@@ -345,6 +345,7 @@ int main() {
     lookat = point3(278, 278, 0);
     vfov = 40.0;
     break;
+  default:
   case 7:
     world = cornell_smoke();
     aspect_ratio = 1.0;
@@ -354,7 +355,6 @@ int main() {
     lookat = point3(278, 278, 0);
     vfov = 40.0;
     break;
-  default:
   case 8:
     world = final_scene();
     aspect_ratio = 1.0;
