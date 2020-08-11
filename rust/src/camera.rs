@@ -50,4 +50,17 @@ impl Camera {
             exposure,
         }
     }
+
+    pub fn get_ray(&self, s: f32, t: f32, rng: &mut impl Rng) -> Ray {
+        let rd = self.lens_radius * Vec3::in_unit_disc(rng);
+        let offset = rd[X] * self.u + rd[Y] * self.v;
+        let time = rng.gen_range(self.exposure.start, self.exposure.end);
+        Ray {
+            origin: self.origin + offset,
+            direction: self.lower_left_corner + s * self.horiontal + t * self.vertical
+                - self.origin
+                - offset,
+            time,
+        }
+    }
 }
