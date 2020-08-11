@@ -350,6 +350,5 @@ fn main() {
     };
 
     eprintln!("Took {:?} wall time.", time);
-
     print_ppm(image);
 }

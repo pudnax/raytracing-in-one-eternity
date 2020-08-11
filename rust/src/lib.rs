@@ -61,29 +61,29 @@ pub fn color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
     let mut accum = Vec3::default();
     // Records the cumulative (product) attenuation of each surface we've
     // visited so far.
-    let mut strengh = Vec3::from(1.);
+    let mut strength = Vec3::from(1.);
 
     let mut bounces = 0;
 
-    // Iterate until one if the fillowing conditions is reaced:
+    // Iterate until one of the following conditions is reached:
     // 1. The ray escapes into space (i.e. no objects are hit).
     // 2. The ray reaches a surface that does not scatter.
     // 3. The ray bounces more than 50 times.
     while let Some(hit) = world.hit_top(&ray, rng) {
         // Record this hit's contribution, attenuated by the total attenuation
         // so far.
-        accum = accum + strengh * hit.material.emitted(hit.p);
+        accum = accum + strength * hit.material.emitted(hit.p);
 
-        // Check whether the material scatters light, generating a neww ray. In
-        // prectice this is true for everything but the emission-only
-        // DiffuseLight type
+        // Check whether the material scatters light, generating a new ray. In
+        // practice this is true for everything but the emission-only
+        // DiffuseLight type.
         //
         // TODO: and also for frosted metal, which effectively makes frosted
         // metal an emitter. That can't be right.
         if let Some((new_ray, attenuation)) = hit.material.scatter(&ray, &hit, rng) {
             // Redirect flight, accumulate the new attenuation value.
             ray = new_ray;
-            strengh = strengh * attenuation;
+            strength = strength * attenuation;
         } else {
             // Locally absorbed; we're done.
             return accum;
@@ -185,7 +185,7 @@ pub fn cornell_box_with_boxes() -> Vec<Box<dyn Object>> {
         offset: Vec3(265., 0., 295.),
         object: object::rotate_y(
             15.,
-            object::rect_prism(Vec3(0., 0., 0.), Vec3(165., 165., 165.), white),
+            object::rect_prism(Vec3(0., 0., 0.), Vec3(165., 330., 165.), white),
         ),
     }));
     scene
@@ -360,7 +360,7 @@ pub fn print_ppm(image: Image) {
             let ib = to_u8(col[B]);
 
             writer
-                .write(format!("{} {} {}", ir, ig, ib).as_bytes())
+                .write(format!("{} {} {}\n", ir, ig, ib).as_bytes())
                 .unwrap();
         }
     }
