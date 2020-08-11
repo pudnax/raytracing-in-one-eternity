@@ -1,7 +1,7 @@
 use rand::prelude::*;
 
 use crate::{
-    object::HitRecor,
+    object::HitRecord,
     ray::Ray,
     texture::Texture,
     vec3::{reflect, refract, Vec3},
@@ -52,7 +52,7 @@ impl Material {
     ///
     /// (In reality, light would be *both* reflected and refracted, but we
     /// choose one of the other randomly and use over-sampling to produce a blend.)
-    pub fn scatter(&self, ray: &Ray, hit: &HitRecor, rng: &mut impl Rng) -> Option<(Ray, Vec3)> {
+    pub fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut impl Rng) -> Option<(Ray, Vec3)> {
         match self {
             Material::Lambertian { albedo } => {
                 let target = hit.p + hit.normal + Vec3::in_unit_sphere(rng);
@@ -114,6 +114,22 @@ impl Material {
                 albedo(hit.p),
             )),
         }
+    }
+
+    pub fn emitted(&self, p: Vec3) -> Vec3 {
+        match self {
+            Material::DiffuseLight {
+                emission,
+                brightness,
+            } => *brightness * emission(p),
+            _ => Vec3::default(),
+        }
+    }
+}
+
+impl std::fmt::Debug for Material {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.write_str("...")
     }
 }
 
