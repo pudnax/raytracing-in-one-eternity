@@ -1,3 +1,4 @@
+pub mod camera;
 pub mod perlin;
 pub mod ray;
 pub mod texture;
