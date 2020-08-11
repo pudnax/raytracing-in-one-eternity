@@ -11,7 +11,7 @@ pub mod vec3;
 use rand::prelude::*;
 use rayon::prelude::*;
 
-use crate::{
+pub use crate::{
     camera::Camera,
     material::Material,
     object::Object,
