@@ -4,13 +4,12 @@ use std::convert::AsRef;
 
 pub fn load_image<P: AsRef<std::path::Path>>(
     path: P,
-) -> Result<(&'static [u8], SampleLayout), Box<dyn std::error::Error>> {
+) -> Result<(Vec<u8>, SampleLayout), Box<dyn std::error::Error>> {
     let image = image::open(path)?.into_rgb();
     let image_description = image.sample_layout();
-    let boxed_img = image.into_raw().into_boxed_slice();
-    let leaked: &'static mut [u8] = Box::leak(boxed_img);
+    let boxed_img = image.into_raw();
 
-    Ok((leaked, image_description))
+    Ok((boxed_img, image_description))
 }
 
 pub fn map_image(u: f64, v: f64, image: &[u8], img_desc: SampleLayout) -> Vec3 {

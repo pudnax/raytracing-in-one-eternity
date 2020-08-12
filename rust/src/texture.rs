@@ -43,5 +43,5 @@ pub fn image_texture<P: std::convert::AsRef<std::path::Path>>(
     filename: P,
 ) -> Result<Texture, Box<dyn std::error::Error>> {
     let (image, desc) = load_image(filename)?;
-    Ok(Arc::new(move |u, v, _| map_image(u, v, image, desc)))
+    Ok(Arc::new(move |u, v, _| map_image(u, v, &image, desc)))
 }
