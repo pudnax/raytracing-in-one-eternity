@@ -43,12 +43,12 @@ impl Bvh {
                 (Y, axis_range(&objs, exposure.clone(), Y)),
                 (Z, axis_range(&objs, exposure.clone(), Z)),
             ];
-            // Note reversed comparation function, to sort descending:
+            // Note reversed comparison function, to sort descending:
             ranges.sort_unstable_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
             ranges[0].0
         };
 
-        // Sort objects along it by centroids. (actually, by centroid*2. This is
+        // Sort objects along it by centroid. (Actually, by centroid*2. This is
         // equivalent and cheaper.)
         objs.sort_unstable_by(|a, b| {
             let abb = a.bounding_box(exposure.clone());

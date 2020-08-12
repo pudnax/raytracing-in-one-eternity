@@ -32,7 +32,7 @@ pub struct HitRecord<'m> {
 /// The primary purpose of an `Object` is to interact with rays of light using
 /// the `hit` method.
 pub trait Object: std::fmt::Debug + Sync + Send {
-    /// Tests if `ray` intersects the object `self`, and if som if that
+    /// Tests if `ray` intersects the object `self`, and if so, if that
     /// intersection occurs within `t_range` along the ray. (Recall that `Ray`
     /// is defined in terms of a `t` value that refers to points along the ray.)
     ///
@@ -40,10 +40,10 @@ pub trait Object: std::fmt::Debug + Sync + Send {
     /// occurs at *negative* `t`, the object is behind the photons instead of in
     /// front of them, and the intersection is an illusion. Second, while the
     /// upper end of `t_range` starts out as infinity, we adjust it down as we
-    /// find objects along `ray`. Once we're found an object at position `t`, we
+    /// find objects along `ray`. Once we've found an object at position `t`, we
     /// can ignore any objects at positions greater than `t`.
     ///
-    /// The `rng` is available for use by materials that have nondetermnistic
+    /// The `rng` is available for use by materials that have nondeterministic
     /// interaction with light, such as smoke and fog.
     fn hit<'o>(
         &'o self,
@@ -52,9 +52,9 @@ pub trait Object: std::fmt::Debug + Sync + Send {
         rng: &mut dyn FnMut() -> f32,
     ) -> Option<HitRecord<'o>>;
 
-    /// Computes the bounding bos for the object at the given range of times.
+    /// Computes the bounding box for the object at the given range of times.
     /// This is called during scene setup, not rendering, and so it may be
-    /// expencive.
+    /// expensive.
     fn bounding_box(&self, exposure: Range<f32>) -> Aabb;
 }
 
@@ -67,7 +67,6 @@ impl Object for Box<dyn Object> {
     ) -> Option<HitRecord<'o>> {
         (**self).hit(ray, t_range, rng)
     }
-
     fn bounding_box(&self, exposure: Range<f32>) -> Aabb {
         (**self).bounding_box(exposure)
     }
@@ -83,6 +82,7 @@ pub struct Sphere {
 }
 
 impl Object for Sphere {
+    #[inline]
     fn hit<'o>(
         &'o self,
         ray: &Ray,
@@ -98,8 +98,8 @@ impl Object for Sphere {
                 (-b - discriminant.sqrt()) / a,
                 (-b + discriminant.sqrt()) / a,
             ] {
-                if t_range.start >= t && t < t_range.end {
-                    let p = ray.point_at_parametr(t);
+                if t_range.start <= t && t < t_range.end {
+                    let p = ray.point_at_parameter(t);
                     return Some(HitRecord {
                         t,
                         p,
@@ -123,12 +123,12 @@ impl Object for Sphere {
 /// A rectangle orthogonal to one axis.
 ///
 /// The rectangle is specified by the name of its orthogonal axis, and the
-/// ranges in the other two axes, "Other two" is alphabetical, so for example,
+/// ranges in the other two axes. "Other two" is alphabetical, so for example,
 /// if `orthogonal_to` is `StaticZ`, the other two are X and Y.
 ///
 /// The axis is named at compile time from one of `StaticX`, `StaticY`, and
-/// `StaticZ`. This gets us code customed to each case, without having sepatrate
-/// types for `RectXY`, `RectYZ` and `RectXZ`.
+/// `StaticZ`. This gets us code customed to each case, without having separate
+/// types for `RectXY`, `RectYZ`, and `RectXZ`.
 #[derive(Debug, Clone)]
 pub struct Rect<A: StaticAxis> {
     /// Axis normal to this rectangle.
@@ -145,7 +145,7 @@ pub struct Rect<A: StaticAxis> {
     pub material: Material,
 }
 
-/// Trait implemented by static axis types for `Rect`
+/// Trait implemented by static axis types for `Rect`.
 pub trait StaticAxis: std::fmt::Debug + Send + Sync {
     const AXIS: Axis;
     const OTHER1: Axis;
@@ -207,7 +207,7 @@ impl<A: StaticAxis> Object for Rect<A> {
             return None;
         }
 
-        let p = ray.point_at_parametr(t);
+        let p = ray.point_at_parameter(t);
         let mut normal = Vec3::default();
         normal[A::AXIS] = 1.;
         Some(HitRecord {
@@ -528,7 +528,7 @@ impl<O: Object> Object for LinearMove<O> {
 }
 
 /// A medium of constant density that scatters light internally, such as
-/// (greatly simplified) smoke ot fog.
+/// (greatly simplified) smoke or fog.
 #[derive(Debug, Clone)]
 pub struct ConstantMedium<O> {
     /// Outer boundary of the medium, expressed as another object.
@@ -536,7 +536,7 @@ pub struct ConstantMedium<O> {
     /// Density of the medium -- how likely is a scattering event per unit
     /// attenuated
     pub density: f32,
-    /// Material that controls scattering behaviour.
+    /// Material that controls scattering behavior.
     pub material: Material,
 }
 
@@ -564,7 +564,7 @@ impl<O: Object> Object for ConstantMedium<O> {
                     let t = hit1.t + hit_distance / ray.direction.length();
                     return Some(HitRecord {
                         t,
-                        p: ray.point_at_parametr(t),
+                        p: ray.point_at_parameter(t),
                         normal: Vec3(1., 0., 0.),
                         material: &self.material,
                     });

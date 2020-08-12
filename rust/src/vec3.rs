@@ -9,8 +9,8 @@ use rand::prelude::*;
 ///    rtiow::vec3::Axis::*` statement.
 /// 2. Using the `Channel` enum: `v[R]`, `v[G]`, `v[B]`. This requires a `use
 ///    rtiow::vec3::Channel::*` statement.
-#[derive(Debug, Clone, Copy, Default)]
-// TODO: Try f64 numbers
+#[derive(Copy, Clone, Default, Debug)]
+// TODO: Try f32 numbers
 pub struct Vec3(pub f32, pub f32, pub f32);
 
 impl Vec3 {
@@ -142,6 +142,8 @@ impl std::ops::Div for Vec3 {
         self.zip_with(rhs, std::ops::Div::div)
     }
 }
+
+/// `vector / scalar`
 impl std::ops::Div<f32> for Vec3 {
     type Output = Vec3;
 
