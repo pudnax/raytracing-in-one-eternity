@@ -18,7 +18,7 @@ use crate::{
 #[derive(Clone)]
 pub struct HitRecord<'m> {
     /// Position along the ray. expressed in distance from the origin.
-    pub t: f32,
+    pub t: f64,
     /// Position along the ray, as an actual point.
     pub p: Vec3,
     /// Surface normal of the object at the position.
@@ -48,26 +48,26 @@ pub trait Object: std::fmt::Debug + Sync + Send {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>>;
 
     /// Computes the bounding box for the object at the given range of times.
     /// This is called during scene setup, not rendering, and so it may be
     /// expensive.
-    fn bounding_box(&self, exposure: Range<f32>) -> Aabb;
+    fn bounding_box(&self, exposure: Range<f64>) -> Aabb;
 }
 
 impl Object for Box<dyn Object> {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
         (**self).hit(ray, t_range, rng)
     }
-    fn bounding_box(&self, exposure: Range<f32>) -> Aabb {
+    fn bounding_box(&self, exposure: Range<f64>) -> Aabb {
         (**self).bounding_box(exposure)
     }
 }
@@ -76,7 +76,7 @@ impl Object for Box<dyn Object> {
 #[derive(Debug, Clone)]
 pub struct Sphere {
     /// Radius of the sphere.
-    pub radius: f32,
+    pub radius: f64,
     /// Material of the sphere.
     pub material: Material,
 }
@@ -86,8 +86,8 @@ impl Object for Sphere {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        _rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        _rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
         let a = ray.direction.dot(ray.direction);
         let b = ray.origin.dot(ray.direction);
@@ -112,7 +112,7 @@ impl Object for Sphere {
         None
     }
 
-    fn bounding_box(&self, _exposure: Range<f32>) -> Aabb {
+    fn bounding_box(&self, _exposure: Range<f64>) -> Aabb {
         Aabb {
             min: -Vec3::from(self.radius),
             max: Vec3::from(self.radius),
@@ -134,13 +134,13 @@ pub struct Rect<A: StaticAxis> {
     /// Axis normal to this rectangle.
     pub orthogonal_to: A,
     /// Range in alphabetically lower non-orthogonal axis.
-    pub range0: Range<f32>,
+    pub range0: Range<f64>,
     /// Range in alphabetically higher non-orthogonal axis.
-    pub range1: Range<f32>,
+    pub range1: Range<f64>,
     /// Position along the orthogonal axis.
     ///
     /// TODO: replace with Translate?
-    pub k: f32,
+    pub k: f64,
     /// Rectangle material.
     pub material: Material,
 }
@@ -187,8 +187,8 @@ impl<A: StaticAxis> Object for Rect<A> {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        _rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        _rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
         // The names x and y below are correct for orthogonal_to=Z.
 
@@ -218,7 +218,7 @@ impl<A: StaticAxis> Object for Rect<A> {
         })
     }
 
-    fn bounding_box(&self, _exposure: Range<f32>) -> Aabb {
+    fn bounding_box(&self, _exposure: Range<f64>) -> Aabb {
         let mut min = Vec3::default();
         let mut max = Vec3::default();
 
@@ -243,8 +243,8 @@ impl<O: Object> Object for FlipNormals<O> {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
         self.0.hit(ray, t_range, rng).map(|h| HitRecord {
             normal: -h.normal,
@@ -252,7 +252,7 @@ impl<O: Object> Object for FlipNormals<O> {
         })
     }
 
-    fn bounding_box(&self, exposure: Range<f32>) -> Aabb {
+    fn bounding_box(&self, exposure: Range<f64>) -> Aabb {
         self.0.bounding_box(exposure)
     }
 }
@@ -269,8 +269,8 @@ impl<T: Object> Object for Translate<T> {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
         let t_ray = Ray {
             origin: ray.origin - self.offset,
@@ -282,7 +282,7 @@ impl<T: Object> Object for Translate<T> {
         })
     }
 
-    fn bounding_box(&self, exposure: Range<f32>) -> Aabb {
+    fn bounding_box(&self, exposure: Range<f64>) -> Aabb {
         let b = self.object.bounding_box(exposure);
         Aabb {
             min: b.min + self.offset,
@@ -303,8 +303,8 @@ impl<T: Object> Object for Scale<T> {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
         let t_ray = Ray {
             origin: ray.origin / self.factor,
@@ -318,7 +318,7 @@ impl<T: Object> Object for Scale<T> {
         })
     }
 
-    fn bounding_box(&self, exposure: Range<f32>) -> Aabb {
+    fn bounding_box(&self, exposure: Range<f64>) -> Aabb {
         let b = self.object.bounding_box(exposure);
         Aabb {
             min: b.min * self.factor,
@@ -334,8 +334,8 @@ impl<T: Object> Object for Scale<T> {
 #[derive(Debug, Clone)]
 pub struct RotateY<O> {
     pub object: O,
-    sin_theta: f32,
-    cos_theta: f32,
+    sin_theta: f64,
+    cos_theta: f64,
 }
 
 impl<T: Object> Object for RotateY<T> {
@@ -343,10 +343,10 @@ impl<T: Object> Object for RotateY<T> {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
-        fn rot(p: Vec3, sin_theta: f32, cos_theta: f32) -> Vec3 {
+        fn rot(p: Vec3, sin_theta: f64, cos_theta: f64) -> Vec3 {
             Vec3(
                 p.dot(Vec3(cos_theta, 0., sin_theta)),
                 p.dot(Vec3(0., 1., 0.)),
@@ -369,8 +369,8 @@ impl<T: Object> Object for RotateY<T> {
             })
     }
 
-    fn bounding_box(&self, exposure: Range<f32>) -> Aabb {
-        fn rot(p: Vec3, sin_theta: f32, cos_theta: f32) -> Vec3 {
+    fn bounding_box(&self, exposure: Range<f64>) -> Aabb {
+        fn rot(p: Vec3, sin_theta: f64, cos_theta: f64) -> Vec3 {
             Vec3(
                 p.dot(Vec3(cos_theta, 0., sin_theta)),
                 p.dot(Vec3(0., 1., 0.)),
@@ -379,10 +379,10 @@ impl<T: Object> Object for RotateY<T> {
         }
 
         let (min, max) = self.object.bounding_box(exposure).corners().fold(
-            (Vec3::from(std::f32::MAX), Vec3::from(std::f32::MIN)),
+            (Vec3::from(std::f64::MAX), Vec3::from(std::f64::MIN)),
             |(min, max), c| {
                 let rot_c = rot(c, self.sin_theta, self.cos_theta);
-                (min.zip_with(rot_c, f32::min), max.zip_with(rot_c, f32::max))
+                (min.zip_with(rot_c, f64::min), max.zip_with(rot_c, f64::max))
             },
         );
         Aabb { min, max }
@@ -397,8 +397,8 @@ impl<T: Object, S: Object> Object for And<T, S> {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        mut t_range: Range<f32>,
-        rng: &mut dyn FnMut() -> f32,
+        mut t_range: Range<f64>,
+        rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
         let hit0 = self.0.hit(ray, t_range.clone(), rng);
         if let Some(h) = &hit0 {
@@ -409,7 +409,7 @@ impl<T: Object, S: Object> Object for And<T, S> {
         hit1.or(hit0)
     }
 
-    fn bounding_box(&self, exposure: Range<f32>) -> Aabb {
+    fn bounding_box(&self, exposure: Range<f64>) -> Aabb {
         self.0
             .bounding_box(exposure.clone())
             .merge(self.1.bounding_box(exposure))
@@ -474,8 +474,8 @@ pub fn rect_prism(p0: Vec3, p1: Vec3, material: Material) -> impl Object {
 
 /// Returns a version of `object` that has been rotated `degrees` around the Y
 /// axis.
-pub fn rotate_y<O: Object>(degrees: f32, object: O) -> RotateY<O> {
-    let radians = degrees * std::f32::consts::PI / 180.;
+pub fn rotate_y<O: Object>(degrees: f64, object: O) -> RotateY<O> {
+    let radians = degrees * std::f64::consts::PI / 180.;
     RotateY {
         object,
         sin_theta: radians.sin(),
@@ -498,8 +498,8 @@ impl<O: Object> Object for LinearMove<O> {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
         self.object.hit(
             &Ray {
@@ -511,7 +511,7 @@ impl<O: Object> Object for LinearMove<O> {
         )
     }
 
-    fn bounding_box(&self, exposure: Range<f32>) -> Aabb {
+    fn bounding_box(&self, exposure: Range<f64>) -> Aabb {
         let bb = self.object.bounding_box(exposure.clone());
 
         let bb_start = Aabb {
@@ -535,7 +535,7 @@ pub struct ConstantMedium<O> {
     pub boundary: O,
     /// Density of the medium -- how likely is a scattering event per unit
     /// attenuated
-    pub density: f32,
+    pub density: f64,
     /// Material that controls scattering behavior.
     pub material: Material,
 }
@@ -545,11 +545,11 @@ impl<O: Object> Object for ConstantMedium<O> {
     fn hit<'o>(
         &'o self,
         ray: &Ray,
-        t_range: Range<f32>,
-        rng: &mut dyn FnMut() -> f32,
+        t_range: Range<f64>,
+        rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
-        if let Some(mut hit1) = self.boundary.hit(ray, f32::MIN..f32::MAX, rng) {
-            if let Some(mut hit2) = self.boundary.hit(ray, hit1.t + 0.0001..f32::MAX, rng) {
+        if let Some(mut hit1) = self.boundary.hit(ray, f64::MIN..f64::MAX, rng) {
+            if let Some(mut hit2) = self.boundary.hit(ray, hit1.t + 0.0001..f64::MAX, rng) {
                 hit1.t = hit1.t.max(t_range.start);
                 hit2.t = hit2.t.min(t_range.end);
                 if hit1.t >= hit2.t {
@@ -574,7 +574,7 @@ impl<O: Object> Object for ConstantMedium<O> {
         None
     }
 
-    fn bounding_box(&self, exposure: Range<f32>) -> Aabb {
+    fn bounding_box(&self, exposure: Range<f64>) -> Aabb {
         self.boundary.bounding_box(exposure)
     }
 }

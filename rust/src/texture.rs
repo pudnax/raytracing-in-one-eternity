@@ -10,7 +10,7 @@ pub fn constant(color: Vec3) -> Texture {
 
 pub fn checker(t0: Texture, t1: Texture) -> Texture {
     Arc::new(move |p| {
-        let s = (10. * p).map(f32::sin).reduce(std::ops::Mul::mul);
+        let s = (10. * p).map(f64::sin).reduce(std::ops::Mul::mul);
         if s < 0. {
             t1(p)
         } else {

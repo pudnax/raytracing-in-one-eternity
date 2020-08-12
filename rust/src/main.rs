@@ -9,7 +9,7 @@ use raytrace::{
 };
 
 #[allow(unused)]
-fn cornell_box_scene(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f32>) {
+fn cornell_box_scene(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f64>) {
     let look_from = Vec3(278., 278., -800.);
     let look_at = Vec3(278., 278., 0.);
     let dist_to_focus = 10.;
@@ -21,7 +21,7 @@ fn cornell_box_scene(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Ran
         look_at,
         Vec3(0., 1., 0.),
         40.,
-        nx as f32 / ny as f32,
+        nx as f64 / ny as f64,
         aperture,
         dist_to_focus,
         exposure.clone(),
@@ -31,7 +31,7 @@ fn cornell_box_scene(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Ran
 }
 
 #[allow(unused)]
-fn motion_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f32>) {
+fn motion_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f64>) {
     let look_from = Vec3(278., 278., -800.);
     let look_at = Vec3(278., 278., 0.);
     let dist_to_focus = 10.;
@@ -43,7 +43,7 @@ fn motion_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f32
         look_at,
         Vec3(0., 1., 0.),
         40.,
-        nx as f32 / ny as f32,
+        nx as f64 / ny as f64,
         aperture,
         dist_to_focus,
         exposure.clone(),
@@ -68,7 +68,7 @@ fn motion_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f32
 }
 
 #[allow(unused)]
-fn volume_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f32>) {
+fn volume_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f64>) {
     let look_from = Vec3(278., 278., -800.);
     let look_at = Vec3(278., 278., 0.);
     let dist_to_focus = 10.;
@@ -80,7 +80,7 @@ fn volume_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f32
         look_at,
         Vec3(0., 1., 0.),
         40.,
-        nx as f32 / ny as f32,
+        nx as f64 / ny as f64,
         aperture,
         dist_to_focus,
         exposure.clone(),
@@ -113,7 +113,7 @@ fn simple_light_scene(
     nx: usize,
     ny: usize,
     rng: &mut impl Rng,
-) -> (Vec<Box<dyn Object>>, Camera, Range<f32>) {
+) -> (Vec<Box<dyn Object>>, Camera, Range<f64>) {
     let look_from = Vec3(278., 278., -800.);
     let look_at = Vec3(278., 278., 0.);
     let dist_to_focus = 10.;
@@ -125,7 +125,7 @@ fn simple_light_scene(
         look_at,
         Vec3(0., 1., 0.),
         40.,
-        nx as f32 / ny as f32,
+        nx as f64 / ny as f64,
         aperture,
         dist_to_focus,
         exposure.clone(),
@@ -163,7 +163,7 @@ fn book_final_scene(
     nx: usize,
     ny: usize,
     rng: &mut impl Rng,
-) -> (Vec<Box<dyn Object>>, Camera, Range<f32>) {
+) -> (Vec<Box<dyn Object>>, Camera, Range<f64>) {
     let look_from = Vec3(478., 278., -600.);
     let look_at = Vec3(278., 278., 0.);
     let dist_to_focus = 10.;
@@ -175,7 +175,7 @@ fn book_final_scene(
         look_at,
         Vec3(0., 1., 0.),
         40.,
-        nx as f32 / ny as f32,
+        nx as f64 / ny as f64,
         aperture,
         dist_to_focus,
         exposure.clone(),
@@ -192,9 +192,9 @@ fn book_final_scene(
         let mut boxes: Vec<Box<dyn Object>> = vec![];
         for i in 0..20 {
             for j in 0..20 {
-                const W: f32 = 100.;
-                let c0 = Vec3(-1000. + i as f32 * W, 0., -1000. + j as f32 * W);
-                let c1 = c0 + Vec3(W, 100. * (rng.gen::<f32>() + 0.01), W);
+                const W: f64 = 100.;
+                let c0 = Vec3(-1000. + i as f64 * W, 0., -1000. + j as f64 * W);
+                let c1 = c0 + Vec3(W, 100. * (rng.gen::<f64>() + 0.01), W);
                 boxes.push(Box::new(object::rect_prism(c0, c1, ground.clone())));
             }
         }

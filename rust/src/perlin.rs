@@ -30,14 +30,14 @@ lazy_static::lazy_static! {
     pub static ref PERM_Z: Vec<u8> = generate_perm(&mut thread_rng());
 }
 
-fn trilinear_interp(corners: &[[[Vec3; 2]; 2]; 2], uvw: Vec3) -> f32 {
+fn trilinear_interp(corners: &[[[Vec3; 2]; 2]; 2], uvw: Vec3) -> f64 {
     let mut accum = 0.;
     let uvw3 = uvw * uvw * (Vec3::from(3.) - 2. * uvw);
     let uvw3_inv = Vec3::from(1.) - uvw3;
     for i in 0..2 {
         for j in 0..2 {
             for k in 0..2 {
-                let ijk = Vec3(i as f32, j as f32, k as f32);
+                let ijk = Vec3(i as f64, j as f64, k as f64);
                 let weight = corners[i][j][k].dot(uvw - ijk);
                 let ijk_inv = Vec3::from(1.) - ijk;
                 accum += (ijk * uvw3 + ijk_inv * uvw3_inv).reduce(std::ops::Mul::mul) * weight;
@@ -47,8 +47,8 @@ fn trilinear_interp(corners: &[[[Vec3; 2]; 2]; 2], uvw: Vec3) -> f32 {
     accum
 }
 
-pub fn noise(p: Vec3) -> f32 {
-    let ijk = p.map(f32::floor);
+pub fn noise(p: Vec3) -> f64 {
+    let ijk = p.map(f64::floor);
     let uvw = p - ijk;
     let mut corners = [[[Vec3::default(); 2]; 2]; 2];
     for di in 0..2 {
@@ -64,7 +64,7 @@ pub fn noise(p: Vec3) -> f32 {
     trilinear_interp(&corners, uvw)
 }
 
-pub fn turb(mut p: Vec3, depth: usize) -> f32 {
+pub fn turb(mut p: Vec3, depth: usize) -> f64 {
     let mut accum = 0.;
     let mut weight = 1.;
     for _ in 0..depth {

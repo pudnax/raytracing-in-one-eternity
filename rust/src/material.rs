@@ -24,7 +24,7 @@ pub enum Material {
         /// The amount of randomness introduced into reflected rays. A `fuzz` of
         /// 0 makes the surface look polished and mirror-smooth, while a `fuzz`
         /// of 1 produces a frosted, almost matte surface.
-        fuzz: f32,
+        fuzz: f64,
     },
     /// A transparent refractive material like glass or water.
     Dielectric {
@@ -32,10 +32,10 @@ pub enum Material {
         /// much light is bent when traveling into or out of an object.
         ///
         /// [ref-idx]: https://en.wikipedia.org/wiki/Refractive_index
-        ref_idx: f32,
+        ref_idx: f64,
     },
     /// Diffuse light.
-    DiffuseLight { emission: Texture, brightness: f32 },
+    DiffuseLight { emission: Texture, brightness: f64 },
     /// Isotropic scattering.
     Isotropic { albedo: Texture },
 }
@@ -96,7 +96,7 @@ impl Material {
                 };
 
                 let direction = refract(ray.direction, outward_normal, ni_over_nt)
-                    .filter(|_| rng.gen::<f32>() >= schlick(cosine, *ref_idx))
+                    .filter(|_| rng.gen::<f64>() >= schlick(cosine, *ref_idx))
                     .unwrap_or_else(|| reflect(ray.direction, hit.normal));
 
                 let attenuation = Vec3::from(1.);
@@ -141,7 +141,7 @@ impl std::fmt::Debug for Material {
 ///
 /// [schlick]: https://en.wikipedia.org/wiki/Schlick%27s_approximation
 #[inline]
-fn schlick(cos: f32, ref_idx: f32) -> f32 {
+fn schlick(cos: f64, ref_idx: f64) -> f64 {
     let r0 = (1. - ref_idx) / (1. + ref_idx);
     let r0 = r0 * r0;
     r0 + (1. - r0) * (1. - cos).powi(5)

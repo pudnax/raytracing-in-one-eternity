@@ -12,8 +12,8 @@ pub struct Camera {
     vertical: Vec3,
     u: Vec3,
     v: Vec3,
-    lens_radius: f32,
-    exposure: std::ops::Range<f32>,
+    lens_radius: f64,
+    exposure: std::ops::Range<f64>,
 }
 
 impl Camera {
@@ -21,14 +21,14 @@ impl Camera {
         look_from: Vec3,
         look_at: Vec3,
         up: Vec3,
-        fov: f32,
-        aspect: f32,
-        aperture: f32,
-        focus_dist: f32,
-        exposure: std::ops::Range<f32>,
+        fov: f64,
+        aspect: f64,
+        aperture: f64,
+        focus_dist: f64,
+        exposure: std::ops::Range<f64>,
     ) -> Self {
         let lens_radius = aperture / 2.;
-        let theta = fov * std::f32::consts::PI / 180.;
+        let theta = fov * std::f64::consts::PI / 180.;
         let half_height = (theta / 2.).tan();
         let half_width = aspect * half_height;
         let origin = look_from;
@@ -51,7 +51,7 @@ impl Camera {
         }
     }
 
-    pub fn get_ray(&self, s: f32, t: f32, rng: &mut impl Rng) -> Ray {
+    pub fn get_ray(&self, s: f64, t: f64, rng: &mut impl Rng) -> Ray {
         let rd = self.lens_radius * Vec3::in_unit_disc(rng);
         let offset = rd[X] * self.u + rd[Y] * self.v;
         let time = rng.gen_range(self.exposure.start, self.exposure.end);

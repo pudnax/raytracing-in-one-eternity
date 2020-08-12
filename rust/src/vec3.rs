@@ -10,8 +10,8 @@ use rand::prelude::*;
 /// 2. Using the `Channel` enum: `v[R]`, `v[G]`, `v[B]`. This requires a `use
 ///    rtiow::vec3::Channel::*` statement.
 #[derive(Copy, Clone, Default, Debug)]
-// TODO: Try f32 numbers
-pub struct Vec3(pub f32, pub f32, pub f32);
+// TODO: Try f64 numbers
+pub struct Vec3(pub f64, pub f64, pub f64);
 
 impl Vec3 {
     /// Generates a random `Vec3` inside a sphere with unit radius. The length
@@ -41,7 +41,7 @@ impl Vec3 {
 
     /// Computes the dot product of two vectors.
     #[inline]
-    pub fn dot(&self, other: Self) -> f32 {
+    pub fn dot(&self, other: Self) -> f64 {
         self.zip_with(other, core::ops::Mul::mul)
             .reduce(core::ops::Add::add)
     }
@@ -58,7 +58,7 @@ impl Vec3 {
 
     /// Gets the length/magnitude of a vector.
     #[inline]
-    pub fn length(&self) -> f32 {
+    pub fn length(&self) -> f64 {
         self.dot(*self).sqrt()
     }
 
@@ -71,7 +71,7 @@ impl Vec3 {
 
     /// Applies `f` to each element of the vector in turn, giving a new vector.
     #[inline]
-    pub fn map(self, mut f: impl FnMut(f32) -> f32) -> Self {
+    pub fn map(self, mut f: impl FnMut(f64) -> f64) -> Self {
         Vec3(f(self.0), f(self.1), f(self.2))
     }
 
@@ -79,7 +79,7 @@ impl Vec3 {
     /// as arguments to function `f`. The results are collected into a new
     /// vector.
     #[inline]
-    pub fn zip_with(self, other: Self, mut f: impl FnMut(f32, f32) -> f32) -> Self {
+    pub fn zip_with(self, other: Self, mut f: impl FnMut(f64, f64) -> f64) -> Self {
         Vec3(f(self.0, other.0), f(self.1, other.1), f(self.2, other.2))
     }
 
@@ -88,7 +88,7 @@ impl Vec3 {
         self,
         other1: Vec3,
         other2: Vec3,
-        mut f: impl FnMut(f32, f32, f32) -> f32,
+        mut f: impl FnMut(f64, f64, f64) -> f64,
     ) -> Self {
         Vec3(
             f(self.0, other1.0, other2.0),
@@ -99,15 +99,15 @@ impl Vec3 {
 
     /// Combines the elements of `self` using `f` until only one result remains.
     #[inline]
-    pub fn reduce(self, f: impl Fn(f32, f32) -> f32) -> f32 {
+    pub fn reduce(self, f: impl Fn(f64, f64) -> f64) -> f64 {
         f(f(self.0, self.1), self.2)
     }
 }
 
 /// Broadcasts a single value to all vector lanes.
-impl From<f32> for Vec3 {
+impl From<f64> for Vec3 {
     #[inline]
-    fn from(v: f32) -> Self {
+    fn from(v: f64) -> Self {
         Vec3(v, v, v)
     }
 }
@@ -124,7 +124,7 @@ impl std::ops::Mul for Vec3 {
 }
 
 /// `scalar * vector`
-impl std::ops::Mul<Vec3> for f32 {
+impl std::ops::Mul<Vec3> for f64 {
     type Output = Vec3;
 
     #[inline]
@@ -144,11 +144,11 @@ impl std::ops::Div for Vec3 {
 }
 
 /// `vector / scalar`
-impl std::ops::Div<f32> for Vec3 {
+impl std::ops::Div<f64> for Vec3 {
     type Output = Vec3;
 
     #[inline]
-    fn div(self, rhs: f32) -> Self::Output {
+    fn div(self, rhs: f64) -> Self::Output {
         self.map(|x| x / rhs)
     }
 }
@@ -164,7 +164,7 @@ impl std::ops::Add for Vec3 {
 }
 
 /// `scalar + vector`
-impl std::ops::Add<Vec3> for f32 {
+impl std::ops::Add<Vec3> for f64 {
     type Output = Vec3;
 
     #[inline]
@@ -241,7 +241,7 @@ pub enum Channel {
 use Channel::*;
 
 impl ::std::ops::Index<Channel> for Vec3 {
-    type Output = f32;
+    type Output = f64;
 
     #[inline]
     fn index(&self, idx: Channel) -> &Self::Output {
@@ -287,7 +287,7 @@ pub enum Axis {
 use Axis::*;
 
 impl ::std::ops::Index<Axis> for Vec3 {
-    type Output = f32;
+    type Output = f64;
 
     #[inline]
     fn index(&self, idx: Axis) -> &Self::Output {
@@ -320,7 +320,7 @@ pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
 /// refractive index if the ray is exiting the material, or its reciprocal if
 /// it's entering.
 #[inline]
-pub fn refract(v: Vec3, n: Vec3, ni_over_nt: f32) -> Option<Vec3> {
+pub fn refract(v: Vec3, n: Vec3, ni_over_nt: f64) -> Option<Vec3> {
     let uv = v.into_unit();
     let dt = uv.dot(n);
     let discriminant = 1.0 - ni_over_nt * ni_over_nt * (1. - dt * dt);

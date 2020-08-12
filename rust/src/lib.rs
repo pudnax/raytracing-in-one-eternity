@@ -31,9 +31,9 @@ impl<'r, T: World + ?Sized> World for &'r T {
 
 impl World for [Box<dyn Object>] {
     fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<object::HitRecord<'a>> {
-        const NEAR: f32 = 0.001;
+        const NEAR: f64 = 0.001;
 
-        let mut nearest = f32::MAX;
+        let mut nearest = f64::MAX;
         let mut hit = None;
 
         for obj in self {
@@ -49,7 +49,7 @@ impl World for [Box<dyn Object>] {
 
 impl World for bvh::Bvh {
     fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<object::HitRecord<'a>> {
-        self.hit(ray, 0.001..f32::MAX, &mut || rng.gen())
+        self.hit(ray, 0.001..f64::MAX, &mut || rng.gen())
     }
 }
 
@@ -247,12 +247,12 @@ pub fn random_scene(rng: &mut impl Rng) -> Vec<Object> {
     for a in -11..11 {
         for b in -11..11 {
             let center = Vec3(
-                a as f32 + 0.9 * rng.gen::<f32>(),
+                a as f64 + 0.9 * rng.gen::<f64>(),
                 0.2,
-                b as f32 + 0.9 * rng.gen::<f32>(),
+                b as f64 + 0.9 * rng.gen::<f64>(),
             );
             if (center - Vec3(4., 0.2, 0.)).length() > 0.9 {
-                let choose_mat = rng.gen::<f32>();
+                let choose_mat = rng.gen::<f64>();
 
                 let obj = if choose_mat < 0.8 {
                     Object::Sphere {
@@ -269,7 +269,7 @@ pub fn random_scene(rng: &mut impl Rng) -> Vec<Object> {
                         radius: 0.2,
                         material: Material::Metal {
                             albedo: 0.5 * (1. + rng.gen::<Vec3>()),
-                            fuzz: 0.5 * rng.gen::<f32>(),
+                            fuzz: 0.5 * rng.gen::<f64>(),
                         },
                         motion: Vec3::default(),
                     }
@@ -351,7 +351,7 @@ pub fn print_ppm(image: Image) {
         for col in scanline {
             let col = Vec3(col.0.sqrt(), col.1.sqrt(), col.2.sqrt());
 
-            fn to_u8(x: f32) -> i32 {
+            fn to_u8(x: f64) -> i32 {
                 ((255.99 * x) as i32).max(0).min(255)
             }
 
@@ -371,13 +371,13 @@ pub fn par_cast(nx: usize, ny: usize, ns: usize, camera: &Camera, world: impl Wo
         let col: Vec3 = (0..ns)
             .map(|_| {
                 let mut rng = thread_rng();
-                let u = (x as f32 + rng.gen::<f32>()) / nx as f32;
-                let v = (y as f32 + rng.gen::<f32>()) / ny as f32;
+                let u = (x as f64 + rng.gen::<f64>()) / nx as f64;
+                let v = (y as f64 + rng.gen::<f64>()) / ny as f64;
                 let r = camera.get_ray(u, v, &mut rng);
                 color(&world, r, &mut rng)
             })
             .sum();
-        col / ns as f32
+        col / ns as f64
     })
 }
 
@@ -392,12 +392,12 @@ pub fn cast(
     Image::compute(nx, ny, |x, y| {
         let col: Vec3 = (0..ns)
             .map(|_| {
-                let u = (x as f32 + rng.gen::<f32>()) / nx as f32;
-                let v = (y as f32 + rng.gen::<f32>()) / ny as f32;
+                let u = (x as f64 + rng.gen::<f64>()) / nx as f64;
+                let v = (y as f64 + rng.gen::<f64>()) / ny as f64;
                 let r = camera.get_ray(u, v, rng);
                 color(&world, r, rng)
             })
             .sum();
-        col / ns as f32
+        col / ns as f64
     })
 }
