@@ -21,6 +21,10 @@ pub struct HitRecord<'m> {
     pub t: f64,
     /// Position along the ray, as an actual point.
     pub p: Vec3,
+    /// Horisontal texture coordinate in range [0, 1)
+    pub u: f64,
+    /// Vertical texture coordinate in range [0, 1)
+    pub v: f64,
     /// Surface normal of the object at the position.
     pub normal: Vec3,
     /// Material of the object at the hit position.
@@ -75,6 +79,8 @@ impl Object for Box<dyn Object> {
 /// A sphere.
 #[derive(Debug, Clone)]
 pub struct Sphere {
+    /// Position of center of the sphere
+    pub center: Vec3,
     /// Radius of the sphere.
     pub radius: f64,
     /// Material of the sphere.
@@ -89,6 +95,14 @@ impl Object for Sphere {
         t_range: Range<f64>,
         _rng: &mut dyn FnMut() -> f64,
     ) -> Option<HitRecord<'o>> {
+        use std::f64::consts::PI;
+        let get_sphere_uv = |p: Vec3| {
+            let phi = f64::atan2(p[Z], p[X]);
+            let theta = p[Y].asin();
+            let u = 1. - (phi + PI) / (2. * PI);
+            let v = (theta + PI / 2.) / PI;
+            (u, v)
+        };
         let a = ray.direction.dot(ray.direction);
         let b = ray.origin.dot(ray.direction);
         let c = ray.origin.dot(ray.origin) - self.radius * self.radius;
@@ -100,9 +114,12 @@ impl Object for Sphere {
             ] {
                 if t_range.start <= t && t < t_range.end {
                     let p = ray.point_at_parameter(t);
+                    let (u, v) = get_sphere_uv((p - self.center) / self.radius);
                     return Some(HitRecord {
                         t,
                         p,
+                        u,
+                        v,
                         normal: p / self.radius,
                         material: &self.material,
                     });
@@ -207,12 +224,17 @@ impl<A: StaticAxis> Object for Rect<A> {
             return None;
         }
 
+        let u = (x - self.range0.start) / (self.range0.end);
+        let v = (y - self.range1.start) / (self.range1.end);
+
         let p = ray.point_at_parameter(t);
         let mut normal = Vec3::default();
         normal[A::AXIS] = 1.;
         Some(HitRecord {
             t,
             p,
+            u,
+            v,
             material: &self.material,
             normal,
         })
@@ -565,6 +587,8 @@ impl<O: Object> Object for ConstantMedium<O> {
                     return Some(HitRecord {
                         t,
                         p: ray.point_at_parameter(t),
+                        u: 0.,
+                        v: 0.,
                         normal: Vec3(1., 0., 0.),
                         material: &self.material,
                     });
