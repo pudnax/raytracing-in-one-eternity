@@ -230,6 +230,15 @@ fn book_final_scene(
         material: glass.clone(),
     }));
 
+    // Textured sphere.
+    world.push(Box::new(object::Sphere {
+        center: Vec3(400., 200., 400.),
+        radius: 100.,
+        material: Material::Lambertian {
+            albedo: texture::image_texture("assets/earthmap.jpg").unwrap(),
+        },
+    }));
+
     // Silvery sphere.
     world.push(Box::new(object::Sphere {
         center: Vec3(0., 150., 145.),
@@ -307,7 +316,7 @@ const USE_BVH: bool = true;
 fn main() {
     const NX: usize = 400;
     const NY: usize = 400;
-    const NS: usize = 100;
+    const NS: usize = 500;
 
     eprintln!(
         "Parallel casting {} x {} image using {}x oversampling.",

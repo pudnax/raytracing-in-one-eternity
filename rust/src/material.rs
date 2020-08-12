@@ -63,7 +63,7 @@ impl Material {
                     direction: target - hit.p,
                     time: ray.time,
                 };
-                Some((scattered, albedo(hit.p)))
+                Some((scattered, albedo(hit.u, hit.v, hit.p)))
             }
             Material::Metal { albedo, fuzz } => {
                 let scattered = Ray {
@@ -114,17 +114,17 @@ impl Material {
                     direction: Vec3::in_unit_sphere(rng),
                     ..*ray
                 },
-                albedo(hit.p),
+                albedo(hit.u, hit.v, hit.p),
             )),
         }
     }
 
-    pub fn emitted(&self, p: Vec3) -> Vec3 {
+    pub fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
         match self {
             Material::DiffuseLight {
                 emission,
                 brightness,
-            } => *brightness * emission(p),
+            } => *brightness * emission(u, v, p),
             _ => Vec3::default(),
         }
     }
