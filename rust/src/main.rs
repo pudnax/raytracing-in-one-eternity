@@ -51,16 +51,13 @@ fn motion_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f64
 
     let mut scene = cornell_box();
 
-    scene.push(Box::new(object::Translate {
-        offset: Vec3(278., 278., 278.),
-        object: object::LinearMove {
-            motion: Vec3(0., 100., 0.),
-            object: object::Sphere {
-                center: Vec3(278., 278., 278.),
-                radius: 65.,
-                material: Material::Lambertian {
-                    albedo: texture::constant(Vec3::from(0.73)),
-                },
+    scene.push(Box::new(object::LinearMove {
+        motion: Vec3(0., 100., 0.),
+        object: object::Sphere {
+            center: Vec3(278., 278., 278.),
+            radius: 65.,
+            material: Material::Lambertian {
+                albedo: texture::constant(Vec3::from(0.73)),
             },
         },
     }));
@@ -89,21 +86,18 @@ fn volume_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f64
 
     let mut scene = cornell_box();
 
-    scene.push(Box::new(object::Translate {
-        offset: Vec3(278., 278., 278.),
-        object: object::ConstantMedium {
-            boundary: object::Sphere {
-                center: Vec3(278., 278., 278.),
-                radius: 180.,
-                // material does not matter here
-                material: material::Material::Lambertian {
-                    albedo: texture::constant(Vec3::from(0.73)),
-                },
+    scene.push(Box::new(object::ConstantMedium {
+        boundary: object::Sphere {
+            center: Vec3(278., 278., 278.),
+            radius: 180.,
+            // material does not matter here
+            material: material::Material::Lambertian {
+                albedo: texture::constant(Vec3::from(0.73)),
             },
-            density: 0.01,
-            material: material::Material::Isotropic {
-                albedo: texture::constant(Vec3(0.2, 0.2, 1.0)),
-            },
+        },
+        density: 0.01,
+        material: material::Material::Isotropic {
+            albedo: texture::constant(Vec3(0.2, 0.2, 1.0)),
         },
     }));
 
@@ -140,15 +134,12 @@ fn simple_light_scene(
     const SPHERES: usize = 1000;
     for _ in 0..SPHERES {
         let pos = 277. + 257. * rng.gen::<Vec3>();
-        world.push(Box::new(object::Translate {
-            object: object::Sphere {
-                center: pos,
-                radius: 20.,
-                material: Material::Lambertian {
-                    albedo: texture::constant(Vec3::from(0.3)),
-                },
+        world.push(Box::new(object::Sphere {
+            center: pos,
+            radius: 20.,
+            material: Material::Lambertian {
+                albedo: texture::constant(Vec3::from(0.3)),
             },
-            offset: pos,
         }));
     }
 
@@ -219,16 +210,13 @@ fn book_final_scene(
     }));
 
     // Brown blurry sphere.
-    world.push(Box::new(object::Translate {
-        offset: Vec3(400., 400., 200.),
-        object: object::LinearMove {
-            motion: Vec3(30., 0., 0.),
-            object: object::Sphere {
-                center: Vec3(400., 400., 200.),
-                radius: 50.,
-                material: Material::Lambertian {
-                    albedo: texture::constant(Vec3(0.7, 0.3, 0.1)),
-                },
+    world.push(Box::new(object::LinearMove {
+        motion: Vec3(30., 0., 0.),
+        object: object::Sphere {
+            center: Vec3(400., 400., 200.),
+            radius: 50.,
+            material: Material::Lambertian {
+                albedo: texture::constant(Vec3(0.7, 0.3, 0.1)),
             },
         },
     }));
@@ -236,36 +224,27 @@ fn book_final_scene(
     let glass = Material::Dielectric { ref_idx: 1.5 };
 
     // Glass sphere.
-    world.push(Box::new(object::Translate {
-        offset: Vec3(260., 150., 45.),
-        object: object::Sphere {
-            center: Vec3(260., 150., 45.),
-            radius: 50.,
-            material: glass.clone(),
-        },
+    world.push(Box::new(object::Sphere {
+        center: Vec3(260., 150., 45.),
+        radius: 50.,
+        material: glass.clone(),
     }));
 
     // Silvery sphere.
-    world.push(Box::new(object::Translate {
-        offset: Vec3(0., 150., 145.),
-        object: object::Sphere {
-            center: Vec3(0., 150., 145.),
-            radius: 50.,
-            material: Material::Metal {
-                albedo: Vec3(0.8, 0.8, 0.9),
-                fuzz: 1.,
-            },
+    world.push(Box::new(object::Sphere {
+        center: Vec3(0., 150., 145.),
+        radius: 50.,
+        material: Material::Metal {
+            albedo: Vec3(0.8, 0.8, 0.9),
+            fuzz: 1.,
         },
     }));
 
     // Blue glass sphere.
-    let boundary = object::Translate {
-        offset: Vec3(360., 150., 145.),
-        object: object::Sphere {
-            center: Vec3(360., 150., 145.),
-            radius: 70.,
-            material: glass.clone(),
-        },
+    let boundary = object::Sphere {
+        center: Vec3(360., 150., 145.),
+        radius: 70.,
+        material: glass.clone(),
     };
     world.push(Box::new(boundary.clone()));
     world.push(Box::new(object::ConstantMedium {
@@ -290,14 +269,11 @@ fn book_final_scene(
     }));
 
     // Perlin marbled sphere.
-    world.push(Box::new(object::Translate {
-        offset: Vec3(220., 280., 300.),
-        object: object::Sphere {
-            center: Vec3(220., 280., 300.),
-            radius: 80.,
-            material: Material::Lambertian {
-                albedo: texture::perlin(0.05),
-            },
+    world.push(Box::new(object::Sphere {
+        center: Vec3(220., 280., 300.),
+        radius: 80.,
+        material: Material::Lambertian {
+            albedo: texture::perlin(0.05),
         },
     }));
 
@@ -309,14 +285,10 @@ fn book_final_scene(
         };
         let spheres = (0..SPHERES)
             .map(|_| {
-                let pos = 165. * rng.gen::<Vec3>();
-                Box::new(object::Translate {
-                    offset: pos,
-                    object: object::Sphere {
-                        center: pos,
-                        radius: 10.,
-                        material: white.clone(),
-                    },
+                Box::new(object::Sphere {
+                    center: 165. * rng.gen::<Vec3>(),
+                    radius: 10.,
+                    material: white.clone(),
                 }) as Box<dyn Object>
             })
             .collect();
@@ -330,11 +302,11 @@ fn book_final_scene(
     (world, camera, exposure)
 }
 
-const USE_BVH: bool = false;
+const USE_BVH: bool = true;
 
 fn main() {
-    const NX: usize = 300;
-    const NY: usize = 300;
+    const NX: usize = 400;
+    const NY: usize = 400;
     const NS: usize = 100;
 
     eprintln!(
