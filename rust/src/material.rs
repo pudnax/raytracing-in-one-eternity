@@ -89,9 +89,10 @@ impl Material {
                     (
                         hit.normal,
                         1.0 / *ref_idx,
-                        ray.direction.dot(hit.normal) / ray.direction.length(),
+                        -ray.direction.dot(hit.normal) / ray.direction.length(),
                     )
                 };
+
                 let direction = refract(ray.direction, outward_normal, ni_over_nt)
                     .filter(|_| rng.gen::<f32>() >= schlick(cosine, *ref_idx))
                     .unwrap_or_else(|| reflect(ray.direction, hit.normal));
