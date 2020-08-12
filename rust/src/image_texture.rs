@@ -7,7 +7,7 @@ pub fn load_image<P: AsRef<std::path::Path>>(
 ) -> Result<(&'static [u8], SampleLayout), Box<dyn std::error::Error>> {
     let image = image::open(path)?.into_rgb();
     let image_description = image.sample_layout();
-    let boxed_img = image.to_vec().into_boxed_slice();
+    let boxed_img = image.into_raw().into_boxed_slice();
     let leaked: &'static mut [u8] = Box::leak(boxed_img);
 
     Ok((leaked, image_description))
