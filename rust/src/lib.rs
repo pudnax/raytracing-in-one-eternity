@@ -1,6 +1,8 @@
+//! ![uml](ml.svg)
 mod aabb;
 pub mod bvh;
 pub mod camera;
+mod image_texture;
 pub mod material;
 pub mod object;
 mod perlin;
@@ -72,7 +74,7 @@ pub fn color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
     while let Some(hit) = world.hit_top(&ray, rng) {
         // Record this hit's contribution, attenuated by the total attenuation
         // so far.
-        accum = accum + strength * hit.material.emitted(hit.p);
+        accum = accum + strength * hit.material.emitted(hit.u, hit.v, hit.p);
 
         // Check whether the material scatters light, generating a new ray. In
         // practice this is true for everything but the emission-only
