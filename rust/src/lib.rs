@@ -1,6 +1,8 @@
+//! ![uml](ml.svg)
 mod aabb;
 pub mod bvh;
 pub mod camera;
+mod image_texture;
 pub mod material;
 pub mod object;
 mod perlin;
