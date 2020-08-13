@@ -75,7 +75,7 @@ impl Material {
                 if scattered.direction.dot(hit.normal) > 0. {
                     Some((scattered, *albedo))
                 } else {
-                    // TODO: this is in the original, but has the odd effect of
+                    // TODO(#3): this is in the original, but has the odd effect of
                     // making metal an emitter.
                     None
                 }
