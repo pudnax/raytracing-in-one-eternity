@@ -158,7 +158,7 @@ pub fn simple_light_scene(
 }
 
 #[allow(unused)]
-pub fn scene_trxtured_sphere(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f64>) {
+pub fn scene_textured_sphere(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range<f64>) {
     let r = 675.;
     let theta = 90. * std::f64::consts::PI / 180.;
     let phi = 1. * std::f64::consts::PI / 180.;
@@ -190,9 +190,9 @@ pub fn scene_trxtured_sphere(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Cam
         23.,
         object::Sphere {
             center: look_at,
-            radius: 100.,
+            radius: 60.,
             material: Material::DiffuseLight {
-                emission: texture::image_texture("assets/neog.png").unwrap(),
+                emission: texture::image_texture("assets/jasmine.png").unwrap(),
                 brightness: 1.,
             },
         },
