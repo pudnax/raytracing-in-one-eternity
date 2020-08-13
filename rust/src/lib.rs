@@ -59,7 +59,7 @@ impl World for bvh::Bvh {
 /// Computes the pixel color along `ray` for the scene of objects `world`.
 ///
 /// This is the actual ray-tracing routine.
-pub fn color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
+pub fn ray_color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
     // Accumulates contribution of each surface we reach.
     let mut accum = Vec3::default();
     // Records the cumulative (product) attenuation of each surface we've
@@ -81,7 +81,7 @@ pub fn color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
         // practice this is true for everything but the emission-only
         // DiffuseLight type.
         //
-        // TODO: and also for frosted metal, which effectively makes frosted
+        // TODO(#4): and also for frosted metal, which effectively makes frosted
         // metal an emitter. That can't be right.
         if let Some((new_ray, attenuation)) = hit.material.scatter(&ray, &hit, rng) {
             // Redirect flight, accumulate the new attenuation value.
@@ -92,6 +92,8 @@ pub fn color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
             return accum;
         }
 
+        // TODO: Add `depth` as configureable argument as maximum
+        // number of bounces
         if bounces == 50 {
             return accum;
         }
@@ -377,7 +379,7 @@ pub fn par_cast(nx: usize, ny: usize, ns: usize, camera: &Camera, world: impl Wo
                 let u = (x as f64 + rng.gen::<f64>()) / nx as f64;
                 let v = (y as f64 + rng.gen::<f64>()) / ny as f64;
                 let r = camera.get_ray(u, v, &mut rng);
-                color(&world, r, &mut rng)
+                ray_color(&world, r, &mut rng)
             })
             .sum();
         col / ns as f64
@@ -398,7 +400,7 @@ pub fn cast(
                 let u = (x as f64 + rng.gen::<f64>()) / nx as f64;
                 let v = (y as f64 + rng.gen::<f64>()) / ny as f64;
                 let r = camera.get_ray(u, v, rng);
-                color(&world, r, rng)
+                ray_color(&world, r, rng)
             })
             .sum();
         col / ns as f64
