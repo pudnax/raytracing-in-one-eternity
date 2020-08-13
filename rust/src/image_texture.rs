@@ -7,9 +7,8 @@ pub fn load_image<P: AsRef<std::path::Path>>(
 ) -> Result<(Vec<u8>, SampleLayout), Box<dyn std::error::Error>> {
     let image = image::open(path)?.into_rgb();
     let image_description = image.sample_layout();
-    let boxed_img = image.into_raw();
 
-    Ok((boxed_img, image_description))
+    Ok((image.into_raw(), image_description))
 }
 
 pub fn map_image(u: f64, v: f64, image: &[u8], img_desc: SampleLayout) -> Vec3 {
