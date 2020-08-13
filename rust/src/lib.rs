@@ -92,7 +92,7 @@ pub fn ray_color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
             return accum;
         }
 
-        // TODO: Add `depth` as configureable argument as maximum
+        // TODO(#6): Add `depth` as configureable argument as maximum
         // number of bounces
         if bounces == 50 {
             return accum;
