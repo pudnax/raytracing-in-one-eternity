@@ -12,13 +12,13 @@ pub fn constant(color: Vec3) -> Texture {
     Arc::new(move |_, _, _| color)
 }
 
-pub fn checker(t0: Texture, t1: Texture) -> Texture {
-    Arc::new(move |_, _, p| {
-        let s = (10. * p).map(f64::sin).reduce(std::ops::Mul::mul);
+pub fn checker(t0: Texture, t1: Texture, scale: f64) -> Texture {
+    Arc::new(move |u, v, p| {
+        let s = (scale * p).map(f64::sin).reduce(std::ops::Mul::mul);
         if s < 0. {
-            t1(0., 0., p)
+            t1(u, v, p)
         } else {
-            t0(0., 0., p)
+            t0(u, v, p)
         }
     })
 }
