@@ -158,7 +158,7 @@ pub struct Rect<A: StaticAxis> {
     pub range1: Range<f64>,
     /// Position along the orthogonal axis.
     ///
-    /// TODO: replace with Translate?
+    /// TODO(#5): replace with Translate?
     pub k: f64,
     /// Rectangle material.
     pub material: Material,
