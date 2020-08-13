@@ -10,7 +10,7 @@ use rand::prelude::*;
 /// 2. Using the `Channel` enum: `v[R]`, `v[G]`, `v[B]`. This requires a `use
 ///    rtiow::vec3::Channel::*` statement.
 #[derive(Copy, Clone, Default, Debug)]
-// TODO: Try f64 numbers
+// TODO(#2): Try f64 numbers
 pub struct Vec3(pub f64, pub f64, pub f64);
 
 impl Vec3 {
