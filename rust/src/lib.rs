@@ -7,6 +7,7 @@ pub mod material;
 pub mod object;
 mod perlin;
 pub mod ray;
+pub mod scenes;
 pub mod texture;
 pub mod vec3;
 
