@@ -40,6 +40,31 @@ impl Vec3 {
         }
     }
 
+    /// Generates a random `Vec3` inside a hemisphere(half of sphere) with
+    /// unit radius in a uniform scatter in the range [-pi/2, pi2] from
+    /// specified direction. The length of the result in between 0 and 1.
+    #[inline]
+    pub fn in_unit_hemisphere(normal: Vec3, rng: &mut impl Rng) -> Vec3 {
+        let dir = Vec3::in_unit_sphere(rng);
+        if dir.dot(normal) > 0. {
+            dir
+        } else {
+            -dir
+        }
+    }
+
+    #[inline]
+    pub fn random_cosine_dir(rng: &mut impl Rng) -> Vec3 {
+        let r1 = rng.gen::<f64>();
+        let r2 = rng.gen::<f64>();
+        let z = (1. - r2).sqrt();
+
+        let phi = 2. * PI * r1;
+        let x = phi.cos() * r2.sqrt();
+        let y = phi.sin() * r2.sqrt();
+        Vec3(x, y, z)
+    }
+
     /// Computes the dot product of two vectors.
     #[inline]
     pub fn dot(&self, other: Self) -> f64 {
