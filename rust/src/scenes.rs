@@ -215,7 +215,7 @@ pub fn scene_textured_sphere(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Cam
         190.,
         object::FlipNormals(object::Sphere {
             center: Vec3(0., 0., 0.),
-            radius: 1000000.,
+            radius: 100000.,
             material: Material::DiffuseLight {
                 // emission: texture::constant(Vec3(1., 1., 1.)),
                 // emission: texture::image_texture("assets/earthmap.jpg").unwrap(),
