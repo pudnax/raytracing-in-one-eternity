@@ -1,4 +1,4 @@
-use crate::Vec3;
+use crate::{Axis::*, Vec3};
 
 /// Orthonormal Basis. Each axis is orthogonal to each other, which
 /// means cross prduct equals to 0([u x v] == 0).
@@ -8,7 +8,7 @@ pub struct Onb(pub Vec3, pub Vec3, pub Vec3);
 impl Onb {
     pub fn build_from_w(normal: Vec3) -> Onb {
         let w = normal.into_unit();
-        let a = if w.0 > 0.9 {
+        let a = if w[X].abs() > 0.9 {
             Vec3(0., 1., 0.)
         } else {
             Vec3(1., 0., 0.)
@@ -20,7 +20,7 @@ impl Onb {
 
     /// Returns a vector in a current basis.
     pub fn local(&self, a: Vec3) -> Vec3 {
-        a.0 * self[U] + a.1 * self[V] + a.2 * self[W]
+        a[X] * self[U] + a[Y] * self[V] + a[Z] * self[W]
     }
 }
 
