@@ -134,6 +134,16 @@ impl std::ops::Mul<Vec3> for f64 {
     }
 }
 
+/// `vector * scalar`
+impl std::ops::Mul<f64> for Vec3 {
+    type Output = Vec3;
+
+    #[inline]
+    fn mul(self, rhs: f64) -> Self::Output {
+        self * Vec3::from(rhs)
+    }
+}
+
 /// Element-wise division.
 impl std::ops::Div for Vec3 {
     type Output = Vec3;
@@ -171,6 +181,16 @@ impl std::ops::Add<Vec3> for f64 {
     #[inline]
     fn add(self, rhs: Vec3) -> Self::Output {
         rhs.map(|x| self + x)
+    }
+}
+
+/// `vector + scalar `
+impl std::ops::Add<f64> for Vec3 {
+    type Output = Vec3;
+
+    #[inline]
+    fn add(self, rhs: f64) -> Self::Output {
+        self.map(|x| x + rhs)
     }
 }
 
