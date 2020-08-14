@@ -1,3 +1,4 @@
+use crate::PI;
 use rand::prelude::*;
 
 /// A three-vector of floats, used as a color, coordinate, etc.
