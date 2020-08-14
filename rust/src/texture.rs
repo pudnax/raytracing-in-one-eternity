@@ -41,6 +41,7 @@ pub fn matte(scale: f64) -> Texture {
 
 pub fn image_texture<P: std::convert::AsRef<std::path::Path>>(
     filename: P,
+    // TODO: Remove boxed error
 ) -> Result<Texture, Box<dyn std::error::Error>> {
     let (image, desc) = load_image(filename)?;
     Ok(Arc::new(move |u, v, _| map_image(u, v, &image, desc)))

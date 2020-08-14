@@ -4,6 +4,7 @@ use std::convert::AsRef;
 
 pub fn load_image<P: AsRef<std::path::Path>>(
     path: P,
+    // TODO: Remove boxed error
 ) -> Result<(Vec<u8>, SampleLayout), Box<dyn std::error::Error>> {
     let image = image::open(path)?.into_rgb();
     let image_description = image.sample_layout();
