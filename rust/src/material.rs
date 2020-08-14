@@ -146,12 +146,18 @@ impl Material {
 
     /// Perfoms a light emitting from a light sources. The all non-emitting
     /// materials return black colour by default.
-    pub fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
+    pub fn emitted(&self, u: f64, v: f64, p: Vec3, hit: &HitRecord) -> Vec3 {
         match self {
             Material::DiffuseLight {
                 emission,
                 brightness,
-            } => *brightness * emission(u, v, p),
+            } => {
+                if p.into_unit().dot(hit.normal) > 0. {
+                    *brightness * emission(u, v, p)
+                } else {
+                    Vec3::from(0.)
+                }
+            }
             _ => Vec3::default(),
         }
     }
