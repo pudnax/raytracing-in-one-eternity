@@ -22,6 +22,8 @@ pub use crate::{
     vec3::{Channel::*, *},
 };
 
+pub use std::f64::consts::{FRAC_PI_2, PI, TAU};
+
 pub trait World: Send + Sync {
     fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<object::HitRecord<'a>>;
 }
@@ -64,7 +66,7 @@ pub fn ray_color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
     let mut accum = Vec3::default();
     // Records the cumulative (product) attenuation of each surface we've
     // visited so far.
-    let mut strength = Vec3::from(1.);
+    let mut attenuation = Vec3::from(1.);
 
     let mut bounces = 0;
 
@@ -75,7 +77,7 @@ pub fn ray_color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
     while let Some(hit) = world.hit_top(&ray, rng) {
         // Record this hit's contribution, attenuated by the total attenuation
         // so far.
-        accum = accum + strength * hit.material.emitted(hit.u, hit.v, hit.p);
+        accum = accum + attenuation * hit.material.emitted(hit.u, hit.v, hit.p);
 
         // Check whether the material scatters light, generating a new ray. In
         // practice this is true for everything but the emission-only
@@ -83,10 +85,11 @@ pub fn ray_color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
         //
         // TODO(#4): and also for frosted metal, which effectively makes frosted
         // metal an emitter. That can't be right.
-        if let Some((new_ray, attenuation)) = hit.material.scatter(&ray, &hit, rng) {
+        if let Some((scattered, albedo, pdf)) = hit.material.scatter(&ray, &hit, rng) {
             // Redirect flight, accumulate the new attenuation value.
-            ray = new_ray;
-            strength = strength * attenuation;
+            attenuation =
+                attenuation * albedo * hit.material.scattering_pdf(&ray, &hit, &scattered) / pdf;
+            ray = scattered;
         } else {
             // Locally absorbed; we're done.
             return accum;
@@ -101,6 +104,7 @@ pub fn ray_color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
         bounces += 1;
     }
 
+    // TODO: Add background color
     Vec3::default()
 }
 

@@ -7,9 +7,9 @@ const USE_BVH: bool = true;
 
 fn main() {
     const ASPECT_RATIO: f64 = 1.0 / 1.0;
-    const NX: usize = 400;
+    const NX: usize = 500;
     const NY: usize = (NX as f64 / ASPECT_RATIO) as usize;
-    const NS: usize = 100;
+    const NS: usize = 500;
 
     eprintln!(
         "Parallel casting {} x {} image using {}x oversampling.",
