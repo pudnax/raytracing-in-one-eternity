@@ -270,7 +270,7 @@ impl ::std::ops::IndexMut<Channel> for Vec3 {
 /// select components from a `Vec3`:
 ///
 /// ```
-/// use rtiow::vec3::{Vec3, Axis::*};
+/// use raytrace::vec3::{Vec3, Axis::*};
 ///
 /// let v = Vec3(1., 2., 3.);
 /// assert_eq!(v[X], 1.);
