@@ -15,4 +15,12 @@ impl Ray {
     pub fn point_at_parameter(&self, t: f64) -> Vec3 {
         self.origin + t * self.direction
     }
+
+    pub fn new(origin: Vec3, direction: Vec3, time: f64) -> Self {
+        Ray {
+            origin,
+            direction,
+            time,
+        }
+    }
 }
