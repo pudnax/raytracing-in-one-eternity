@@ -1,4 +1,3 @@
-use crate::PI;
 use rand::prelude::*;
 
 /// A three-vector of floats, used as a color, coordinate, etc.
@@ -51,18 +50,6 @@ impl Vec3 {
         } else {
             -dir
         }
-    }
-
-    #[inline]
-    pub fn random_cosine_dir(rng: &mut impl Rng) -> Vec3 {
-        let r1 = rng.gen::<f64>();
-        let r2 = rng.gen::<f64>();
-        let z = (1. - r2).sqrt();
-
-        let phi = 2. * PI * r1;
-        let x = phi.cos() * r2.sqrt();
-        let y = phi.sin() * r2.sqrt();
-        Vec3(x, y, z)
     }
 
     /// Computes the dot product of two vectors.

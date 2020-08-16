@@ -1,8 +1,9 @@
 use rand::prelude::*;
 
 use crate::{
-    object::HitRecord,
+    objects::HitRecord,
     onb::{AxisBasis::*, Onb},
+    pdf,
     ray::Ray,
     texture::Texture,
     vec3::{reflect, refract, Vec3},
@@ -66,7 +67,7 @@ impl Material {
         match self {
             Material::Lambertian { albedo } => {
                 let uvw = Onb::build_from_w(hit.normal);
-                let direction = uvw.local(Vec3::random_cosine_dir(rng));
+                let direction = uvw.local(pdf::random_cosine_dir(&mut || rng.gen()));
                 let scattered = Ray {
                     origin: hit.p,
                     direction: direction.into_unit(),
@@ -146,6 +147,7 @@ impl Material {
 
     /// Perfoms a light emitting from a light sources. The all non-emitting
     /// materials return black colour by default.
+    // TODO: Remove reference to `HitRecord` which is self.
     pub fn emitted(&self, u: f64, v: f64, p: Vec3, hit: &HitRecord) -> Vec3 {
         match self {
             Material::DiffuseLight {

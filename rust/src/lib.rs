@@ -3,8 +3,9 @@ pub mod bvh;
 pub mod camera;
 mod image_texture;
 pub mod material;
-pub mod object;
+pub mod objects;
 mod onb;
+mod pdf;
 mod perlin;
 pub mod ray;
 pub mod scenes;
@@ -17,7 +18,11 @@ use rayon::prelude::*;
 pub use crate::{
     camera::Camera,
     material::Material,
-    object::Object,
+    objects::{
+        rect_prism, rotate_y, FlipNormals, HitRecord, Object, PdfObject, Rect, Sphere, StaticX,
+        StaticY, StaticZ, Translate,
+    },
+    pdf::Pdf,
     ray::Ray,
     vec3::{Channel::*, *},
 };
@@ -25,17 +30,17 @@ pub use crate::{
 pub use std::f64::consts::{FRAC_PI_2, PI, TAU};
 
 pub trait World: Send + Sync {
-    fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<object::HitRecord<'a>>;
+    fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<HitRecord<'a>>;
 }
 
 impl<'r, T: World + ?Sized> World for &'r T {
-    fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<object::HitRecord<'a>> {
+    fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<HitRecord<'a>> {
         (*self).hit_top(ray, rng)
     }
 }
 
 impl World for [Box<dyn Object>] {
-    fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<object::HitRecord<'a>> {
+    fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<HitRecord<'a>> {
         const NEAR: f64 = 0.001;
 
         let mut nearest = f64::MAX;
@@ -53,7 +58,7 @@ impl World for [Box<dyn Object>] {
 }
 
 impl World for bvh::Bvh {
-    fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<object::HitRecord<'a>> {
+    fn hit_top<'a>(&'a self, ray: &Ray, rng: &mut impl Rng) -> Option<HitRecord<'a>> {
         self.hit(ray, 0.001..f64::MAX, &mut || rng.gen())
     }
 }
@@ -77,7 +82,7 @@ pub fn ray_color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
     while let Some(hit) = world.hit_top(&ray, rng) {
         // Record this hit's contribution, attenuated by the total attenuation
         // so far.
-        accum = accum + attenuation * hit.material.emitted(hit.u, hit.v, hit.p);
+        accum = accum + attenuation * hit.material.emitted(hit.u, hit.v, hit.p, &hit);
 
         // Check whether the material scatters light, generating a new ray. In
         // practice this is true for everything but the emission-only
@@ -85,10 +90,9 @@ pub fn ray_color(world: &impl World, mut ray: Ray, rng: &mut impl Rng) -> Vec3 {
         //
         // TODO(#4): and also for frosted metal, which effectively makes frosted
         // metal an emitter. That can't be right.
-        if let Some((scattered, albedo, pdf)) = hit.material.scatter(&ray, &hit, rng) {
+        if let Some((scattered, albedo, _pdf)) = hit.material.scatter(&ray, &hit, rng) {
             // Redirect flight, accumulate the new attenuation value.
-            attenuation =
-                attenuation * albedo * hit.material.scattering_pdf(&ray, &hit, &scattered) / pdf;
+            attenuation = attenuation * albedo;
             ray = scattered;
         } else {
             // Locally absorbed; we're done.
@@ -123,48 +127,48 @@ pub fn cornell_box() -> Vec<Box<dyn Object>> {
         brightness: 15.,
     };
     vec![
-        Box::new(object::Rect {
-            orthogonal_to: object::StaticY,
+        Box::new(Rect {
+            orthogonal_to: StaticY,
             range0: 213. ..343.,
             range1: 227. ..332.,
             k: 554.,
             material: light,
         }),
         // floor
-        Box::new(object::Rect {
-            orthogonal_to: object::StaticY,
+        Box::new(Rect {
+            orthogonal_to: StaticY,
             range0: 0. ..555.,
             range1: 0. ..555.,
             k: 0.,
             material: white.clone(),
         }),
         // rear wall
-        Box::new(object::FlipNormals(object::Rect {
-            orthogonal_to: object::StaticZ,
+        Box::new(FlipNormals(Rect {
+            orthogonal_to: StaticZ,
             range0: 0. ..555.,
             range1: 0. ..555.,
             k: 555.,
             material: white.clone(),
         })),
         // ceiling
-        Box::new(object::FlipNormals(object::Rect {
-            orthogonal_to: object::StaticY,
+        Box::new(FlipNormals(Rect {
+            orthogonal_to: StaticY,
             range0: 0. ..555.,
             range1: 0. ..555.,
             k: 555.,
             material: white.clone(),
         })),
         // right wall
-        Box::new(object::Rect {
-            orthogonal_to: object::StaticX,
+        Box::new(Rect {
+            orthogonal_to: StaticX,
             range0: 0. ..555.,
             range1: 0. ..555.,
             k: 0.,
             material: red,
         }),
         // left wall
-        Box::new(object::FlipNormals(object::Rect {
-            orthogonal_to: object::StaticX,
+        Box::new(FlipNormals(Rect {
+            orthogonal_to: StaticX,
             range0: 0. ..555.,
             range1: 0. ..555.,
             k: 555.,
@@ -183,18 +187,18 @@ pub fn cornell_box_with_boxes() -> Vec<Box<dyn Object>> {
     let mut scene = cornell_box();
     let white = diffuse_color(Vec3::from(0.73));
 
-    scene.push(Box::new(object::Translate {
+    scene.push(Box::new(Translate {
         offset: Vec3(130., 0., 65.),
-        object: object::rotate_y(
+        object: rotate_y(
             -18.,
-            object::rect_prism(Vec3(0., 0., 0.), Vec3(165., 165., 165.), white.clone()),
+            rect_prism(Vec3(0., 0., 0.), Vec3(165., 165., 165.), white.clone()),
         ),
     }));
-    scene.push(Box::new(object::Translate {
+    scene.push(Box::new(Translate {
         offset: Vec3(265., 0., 295.),
-        object: object::rotate_y(
+        object: rotate_y(
             15.,
-            object::rect_prism(Vec3(0., 0., 0.), Vec3(165., 330., 165.), white),
+            rect_prism(Vec3(0., 0., 0.), Vec3(165., 330., 165.), white),
         ),
     }));
     scene
@@ -203,7 +207,7 @@ pub fn cornell_box_with_boxes() -> Vec<Box<dyn Object>> {
 /*
 pub fn simple_light() -> Vec<Object> {
     vec![
-        Object::Sphere {
+        Sphere {
             center: Vec3(0., -1000., 0.),
             radius: 1000.,
             material: Material::Lambertian {
@@ -211,7 +215,7 @@ pub fn simple_light() -> Vec<Object> {
             },
             motion: Vec3::default(),
         },
-        Object::Sphere {
+        Sphere {
             center: Vec3(0., 2., 0.),
             radius: 2.,
             material: Material::Lambertian {
@@ -219,7 +223,7 @@ pub fn simple_light() -> Vec<Object> {
             },
             motion: Vec3::default(),
         },
-        Object::Sphere {
+        Sphere {
             center: Vec3(0., 7., 0.),
             radius: 2.,
             material: Material::DiffuseLight {
@@ -228,8 +232,8 @@ pub fn simple_light() -> Vec<Object> {
             },
             motion: Vec3::default(),
         },
-        Object::Rect {
-            orthogonal_to: object::StaticAxis::Z,
+        Rect {
+            orthogonal_to: StaticAxis::Z,
             range0: 3. ..5.,
             range1: 1. ..3.,
             k: -2.,
@@ -244,7 +248,7 @@ pub fn simple_light() -> Vec<Object> {
 
 /*
 pub fn random_scene(rng: &mut impl Rng) -> Vec<Object> {
-    let mut world = vec![Object::Sphere {
+    let mut world = vec![Sphere {
         center: Vec3(0., -1000., 0.),
         radius: 1000.,
         material: Material::Lambertian {
@@ -264,7 +268,7 @@ pub fn random_scene(rng: &mut impl Rng) -> Vec<Object> {
                 let choose_mat = rng.gen::<f64>();
 
                 let obj = if choose_mat < 0.8 {
-                    Object::Sphere {
+                    Sphere {
                         center,
                         radius: 0.2,
                         material: Material::Lambertian {
@@ -273,7 +277,7 @@ pub fn random_scene(rng: &mut impl Rng) -> Vec<Object> {
                         motion: Vec3(0., rng.gen_range(0., 0.5), 0.),
                     }
                 } else if choose_mat < 0.95 {
-                    Object::Sphere {
+                    Sphere {
                         center,
                         radius: 0.2,
                         material: Material::Metal {
@@ -283,7 +287,7 @@ pub fn random_scene(rng: &mut impl Rng) -> Vec<Object> {
                         motion: Vec3::default(),
                     }
                 } else {
-                    Object::Sphere {
+                    Sphere {
                         center,
                         radius: 0.2,
                         material: Material::Dielectric { ref_idx: 1.5 },
@@ -295,14 +299,14 @@ pub fn random_scene(rng: &mut impl Rng) -> Vec<Object> {
         }
     }
 
-    world.push(Object::Sphere {
+    world.push(Sphere {
         center: Vec3(0., 1., 0.),
         radius: 1.0,
         material: Material::Dielectric { ref_idx: 1.5 },
         motion: Vec3::default(),
     });
 
-    world.push(Object::Sphere {
+    world.push(Sphere {
         center: Vec3(-4., 1., 0.),
         radius: 1.0,
         material: Material::Metal {
@@ -312,7 +316,7 @@ pub fn random_scene(rng: &mut impl Rng) -> Vec<Object> {
         motion: Vec3::default(),
     });
 
-    world.push(Object::Sphere {
+    world.push(Sphere {
         center: Vec3(4., 1., 0.),
         radius: 1.0,
         material: Material::DiffuseLight {

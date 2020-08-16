@@ -2,7 +2,7 @@ use crate::{
     bvh,
     camera::Camera,
     material::{self, Material},
-    object::{self, Object},
+    objects::*,
     texture,
     vec3::Vec3,
 };
@@ -53,9 +53,9 @@ pub fn motion_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range
 
     let mut scene = cornell_box();
 
-    scene.push(Box::new(object::LinearMove {
+    scene.push(Box::new(LinearMove {
         motion: Vec3(0., 100., 0.),
-        object: object::Sphere {
+        object: Sphere {
             center: Vec3(278., 278., 278.),
             radius: 65.,
             material: Material::Lambertian {
@@ -88,8 +88,8 @@ pub fn volume_test(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Camera, Range
 
     let mut scene = cornell_box();
 
-    scene.push(Box::new(object::ConstantMedium {
-        boundary: object::Sphere {
+    scene.push(Box::new(ConstantMedium {
+        boundary: Sphere {
             center: Vec3(278., 278., 278.),
             radius: 180.,
             // material does not matter here
@@ -136,7 +136,7 @@ pub fn simple_light_scene(
     const SPHERES: usize = 1000;
     for _ in 0..SPHERES {
         let pos = 277. + 257. * rng.gen::<Vec3>();
-        world.push(Box::new(object::Sphere {
+        world.push(Box::new(Sphere {
             center: pos,
             radius: 20.,
             material: Material::Lambertian {
@@ -145,7 +145,7 @@ pub fn simple_light_scene(
         }));
     }
 
-    world.push(Box::new(object::FlipNormals(object::Sphere {
+    world.push(Box::new(FlipNormals(Sphere {
         center: Vec3::default(),
         radius: 1000.,
         material: Material::DiffuseLight {
@@ -186,9 +186,9 @@ pub fn scene_textured_sphere(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Cam
     let mut world: Vec<Box<dyn Object>> = vec![];
 
     // Textured sphere.
-    world.push(Box::new(object::rotate_y(
+    world.push(Box::new(rotate_y(
         23.,
-        object::Sphere {
+        Sphere {
             center: look_at,
             radius: 60.,
             material: Material::DiffuseLight {
@@ -205,15 +205,15 @@ pub fn scene_textured_sphere(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Cam
     //         0.02,
     //     ),
     // };
-    // world.push(Box::new(object::Sphere {
+    // world.push(Box::new(Sphere {
     //     center: Vec3(0., -10000., 0.),
     //     radius: 10000.,
     //     material: ground,
     // }));
     //
-    world.push(Box::new(object::rotate_y(
+    world.push(Box::new(rotate_y(
         190.,
-        object::FlipNormals(object::Sphere {
+        FlipNormals(Sphere {
             center: Vec3(0., 0., 0.),
             radius: 100000.,
             material: Material::DiffuseLight {
@@ -227,8 +227,8 @@ pub fn scene_textured_sphere(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Cam
     )));
 
     // Make light.
-    world.push(Box::new(object::Rect {
-        orthogonal_to: object::StaticX,
+    world.push(Box::new(Rect {
+        orthogonal_to: StaticX,
         range0: -123. ..423.,
         range1: -112. ..412.,
         k: 950.,
@@ -278,15 +278,15 @@ pub fn book_final_scene(
                 const W: f64 = 100.;
                 let c0 = Vec3(-1000. + i as f64 * W, 0., -1000. + j as f64 * W);
                 let c1 = c0 + Vec3(W, 100. * (rng.gen::<f64>() + 0.01), W);
-                boxes.push(Box::new(object::rect_prism(c0, c1, ground.clone())));
+                boxes.push(Box::new(rect_prism(c0, c1, ground.clone())));
             }
         }
         Box::new(bvh::Bvh::new(boxes, exposure.clone()))
     });
 
     // Make light.
-    world.push(Box::new(object::Rect {
-        orthogonal_to: object::StaticY,
+    world.push(Box::new(Rect {
+        orthogonal_to: StaticY,
         range0: 123. ..423.,
         range1: 147. ..412.,
         k: 554.,
@@ -297,9 +297,9 @@ pub fn book_final_scene(
     }));
 
     // Brown blurry sphere.
-    world.push(Box::new(object::LinearMove {
+    world.push(Box::new(LinearMove {
         motion: Vec3(30., 0., 0.),
-        object: object::Sphere {
+        object: Sphere {
             center: Vec3(400., 400., 200.),
             radius: 50.,
             material: Material::Lambertian {
@@ -311,14 +311,14 @@ pub fn book_final_scene(
     let glass = Material::Dielectric { ref_idx: 1.5 };
 
     // Glass sphere.
-    world.push(Box::new(object::Sphere {
+    world.push(Box::new(Sphere {
         center: Vec3(260., 150., 45.),
         radius: 50.,
         material: glass.clone(),
     }));
 
     // Textured sphere.
-    world.push(Box::new(object::Sphere {
+    world.push(Box::new(Sphere {
         center: Vec3(400., 200., 400.),
         radius: 100.,
         material: Material::Lambertian {
@@ -327,7 +327,7 @@ pub fn book_final_scene(
     }));
 
     // Silvery sphere.
-    world.push(Box::new(object::Sphere {
+    world.push(Box::new(Sphere {
         center: Vec3(0., 150., 145.),
         radius: 50.,
         material: Material::Metal {
@@ -337,13 +337,13 @@ pub fn book_final_scene(
     }));
 
     // Blue glass sphere.
-    let boundary = object::Sphere {
+    let boundary = Sphere {
         center: Vec3(360., 150., 145.),
         radius: 70.,
         material: glass.clone(),
     };
     world.push(Box::new(boundary.clone()));
-    world.push(Box::new(object::ConstantMedium {
+    world.push(Box::new(ConstantMedium {
         boundary,
         density: 0.2,
         material: Material::Isotropic {
@@ -352,8 +352,8 @@ pub fn book_final_scene(
     }));
 
     // Fog.
-    world.push(Box::new(object::ConstantMedium {
-        boundary: object::Sphere {
+    world.push(Box::new(ConstantMedium {
+        boundary: Sphere {
             center: Vec3::default(),
             radius: 5000.,
             material: glass.clone(), // doesn't matter
@@ -365,7 +365,7 @@ pub fn book_final_scene(
     }));
 
     // Perlin marbled sphere.
-    world.push(Box::new(object::Sphere {
+    world.push(Box::new(Sphere {
         center: Vec3(220., 280., 300.),
         radius: 80.,
         material: Material::Lambertian {
@@ -381,7 +381,7 @@ pub fn book_final_scene(
         };
         let spheres = (0..SPHERES)
             .map(|_| {
-                Box::new(object::Sphere {
+                Box::new(Sphere {
                     center: 165. * rng.gen::<Vec3>(),
                     radius: 10.,
                     material: white.clone(),
@@ -389,9 +389,9 @@ pub fn book_final_scene(
             })
             .collect();
         let bvh = bvh::Bvh::new(spheres, exposure.clone());
-        object::Translate {
+        Translate {
             offset: Vec3(-100., 270., 395.),
-            object: object::rotate_y(15., bvh),
+            object: rotate_y(15., bvh),
         }
     }));
 
