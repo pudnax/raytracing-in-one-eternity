@@ -39,6 +39,19 @@ impl Vec3 {
         }
     }
 
+    /// Generates a random `Vec3` inside a hemisphere(half of sphere) with
+    /// unit radius in a uniform scatter in the range [-pi/2, pi2] from
+    /// specified direction. The length of the result in between 0 and 1.
+    #[inline]
+    pub fn in_unit_hemisphere(normal: Vec3, rng: &mut impl Rng) -> Vec3 {
+        let dir = Vec3::in_unit_sphere(rng);
+        if dir.dot(normal) > 0. {
+            dir
+        } else {
+            -dir
+        }
+    }
+
     /// Computes the dot product of two vectors.
     #[inline]
     pub fn dot(&self, other: Self) -> f64 {
@@ -133,6 +146,16 @@ impl std::ops::Mul<Vec3> for f64 {
     }
 }
 
+/// `vector * scalar`
+impl std::ops::Mul<f64> for Vec3 {
+    type Output = Vec3;
+
+    #[inline]
+    fn mul(self, rhs: f64) -> Self::Output {
+        self * Vec3::from(rhs)
+    }
+}
+
 /// Element-wise division.
 impl std::ops::Div for Vec3 {
     type Output = Vec3;
@@ -170,6 +193,16 @@ impl std::ops::Add<Vec3> for f64 {
     #[inline]
     fn add(self, rhs: Vec3) -> Self::Output {
         rhs.map(|x| self + x)
+    }
+}
+
+/// `vector + scalar `
+impl std::ops::Add<f64> for Vec3 {
+    type Output = Vec3;
+
+    #[inline]
+    fn add(self, rhs: f64) -> Self::Output {
+        self.map(|x| x + rhs)
     }
 }
 
@@ -270,7 +303,7 @@ impl ::std::ops::IndexMut<Channel> for Vec3 {
 /// select components from a `Vec3`:
 ///
 /// ```
-/// use rtiow::vec3::{Vec3, Axis::*};
+/// use raytrace::vec3::{Vec3, Axis::*};
 ///
 /// let v = Vec3(1., 2., 3.);
 /// assert_eq!(v[X], 1.);

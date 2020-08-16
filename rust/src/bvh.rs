@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use crate::{
     aabb::Aabb,
-    object::{HitRecord, Object},
+    objects::{HitRecord, Object},
     ray::Ray,
     vec3::Axis::{self, *},
 };

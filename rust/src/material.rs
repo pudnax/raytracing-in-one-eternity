@@ -1,10 +1,13 @@
 use rand::prelude::*;
 
 use crate::{
-    object::HitRecord,
+    objects::HitRecord,
+    onb::{AxisBasis::*, Onb},
+    pdf,
     ray::Ray,
     texture::Texture,
     vec3::{reflect, refract, Vec3},
+    PI,
 };
 
 /// Material options for a rendered object.
@@ -54,16 +57,24 @@ impl Material {
     /// (In reality, light would be *both* reflected and refracted, but we
     /// choose one or the other randomly and use over-sampling to produce a
     /// blend.)
-    pub fn scatter(&self, ray: &Ray, hit: &HitRecord, rng: &mut impl Rng) -> Option<(Ray, Vec3)> {
+    // TODO: PDF implemented only for Lambertian material.
+    pub fn scatter(
+        &self,
+        ray: &Ray,
+        hit: &HitRecord,
+        rng: &mut impl Rng,
+    ) -> Option<(Ray, Vec3, f64)> {
         match self {
             Material::Lambertian { albedo } => {
-                let target = hit.p + hit.normal + Vec3::in_unit_sphere(rng);
+                let uvw = Onb::build_from_w(hit.normal);
+                let direction = uvw.local(pdf::random_cosine_dir(&mut || rng.gen()));
                 let scattered = Ray {
                     origin: hit.p,
-                    direction: target - hit.p,
+                    direction: direction.into_unit(),
                     time: ray.time,
                 };
-                Some((scattered, albedo(hit.u, hit.v, hit.p)))
+                let pdf = uvw[W].dot(scattered.direction) / PI;
+                Some((scattered, albedo(hit.u, hit.v, hit.p), pdf))
             }
             Material::Metal { albedo, fuzz } => {
                 let scattered = Ray {
@@ -73,7 +84,7 @@ impl Material {
                     ..*ray
                 };
                 if scattered.direction.dot(hit.normal) > 0. {
-                    Some((scattered, *albedo))
+                    Some((scattered, *albedo, 0.))
                 } else {
                     // TODO(#3): this is in the original, but has the odd effect of
                     // making metal an emitter.
@@ -105,7 +116,7 @@ impl Material {
                     direction,
                     time: ray.time,
                 };
-                Some((ray, attenuation))
+                Some((ray, attenuation, 0.))
             }
             Material::DiffuseLight { .. } => None,
             Material::Isotropic { albedo } => Some((
@@ -115,16 +126,40 @@ impl Material {
                     ..*ray
                 },
                 albedo(hit.u, hit.v, hit.p),
+                0.,
             )),
         }
     }
 
-    pub fn emitted(&self, u: f64, v: f64, p: Vec3) -> Vec3 {
+    pub fn scattering_pdf(&self, _ray: &Ray, hit: &HitRecord, scattered: &Ray) -> f64 {
+        match self {
+            Material::Lambertian { .. } => {
+                let cosine = hit.normal.dot(scattered.direction.into_unit());
+                if cosine < 0. {
+                    return 0.;
+                } else {
+                    return cosine / PI;
+                }
+            }
+            _ => 0.,
+        }
+    }
+
+    /// Perfoms a light emitting from a light sources. The all non-emitting
+    /// materials return black colour by default.
+    // TODO: Remove reference to `HitRecord` which is self.
+    pub fn emitted(&self, u: f64, v: f64, p: Vec3, hit: &HitRecord) -> Vec3 {
         match self {
             Material::DiffuseLight {
                 emission,
                 brightness,
-            } => *brightness * emission(u, v, p),
+            } => {
+                if p.into_unit().dot(hit.normal) > 0. {
+                    *brightness * emission(u, v, p)
+                } else {
+                    Vec3::from(0.)
+                }
+            }
             _ => Vec3::default(),
         }
     }
