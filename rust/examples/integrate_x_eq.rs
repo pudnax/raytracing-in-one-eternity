@@ -6,7 +6,7 @@ fn main() {
 
     let mut rng = thread_rng();
     for _ in 0..n {
-        let x = f64::powf(rng.gen_range(0., 2.), 1. / 3.);
+        let x = f64::powf(rng.gen_range(0. ..2.), 1. / 3.);
         sum += x * x / pdf(x);
     }
 

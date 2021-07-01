@@ -6,7 +6,7 @@ pub fn load_image<P: AsRef<std::path::Path>>(
     path: P,
     // TODO: Remove boxed error
 ) -> Result<(Vec<u8>, SampleLayout), Box<dyn std::error::Error>> {
-    let image = image::open(path)?.into_rgb();
+    let image = image::open(path)?.into_rgb8();
     let image_description = image.sample_layout();
 
     Ok((image.into_raw(), image_description))

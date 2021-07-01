@@ -10,7 +10,7 @@ fn generate_perm(rng: &mut impl Rng) -> Vec<u8> {
     }
 
     for i in (1..size).rev() {
-        p.swap(i, rng.gen_range(0, i));
+        p.swap(i, rng.gen_range(0..i));
     }
     p
 }

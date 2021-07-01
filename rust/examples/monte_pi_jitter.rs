@@ -9,14 +9,14 @@ fn main() {
 
     for i in 0..sqrt_n {
         for j in 0..sqrt_n {
-            let (x, y) = (rng.gen_range(-1., 1.), rng.gen_range(-1., 1.));
+            let (x, y) = (rng.gen_range(-1. ..1.), rng.gen_range(-1. ..1.));
 
             if (x * x + y * y) < 1. {
                 inside_circle += 1;
             }
 
-            let x = 2. * ((i as f64 + rng.gen_range(0., 1.)) / sqrt_n as f64) - 1.;
-            let y = 2. * ((j as f64 + rng.gen_range(0., 1.)) / sqrt_n as f64) - 1.;
+            let x = 2. * ((i as f64 + rng.gen_range(0. ..1.)) / sqrt_n as f64) - 1.;
+            let y = 2. * ((j as f64 + rng.gen_range(0. ..1.)) / sqrt_n as f64) - 1.;
 
             if (x * x + y * y) < 1. {
                 inside_circle_stratified += 1;
