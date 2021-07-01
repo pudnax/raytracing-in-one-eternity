@@ -2,7 +2,7 @@ use rand::prelude::*;
 use raytrace::vec3::Vec3;
 
 fn main() {
-    let n = 1000_000;
+    let n = 1_000_000;
     let mut sum = 0.0;
     let mut rng = thread_rng();
     for _ in 0..n {

@@ -27,7 +27,7 @@ impl Aabb {
         end > start
     }
 
-    pub fn corners<'s>(&'s self) -> impl Iterator<Item = Vec3> + 's {
+    pub fn corners(&self) -> impl Iterator<Item = Vec3> + '_ {
         (0..2).flat_map(move |x| {
             (0..2).flat_map(move |y| {
                 (0..2).map(move |z| {

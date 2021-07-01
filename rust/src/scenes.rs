@@ -183,62 +183,65 @@ pub fn scene_textured_sphere(nx: usize, ny: usize) -> (Vec<Box<dyn Object>>, Cam
         exposure.clone(),
     );
 
-    let mut world: Vec<Box<dyn Object>> = vec![];
+    #[allow(clippy::vec_init_then_push)]
+    let world = {
+        let mut world: Vec<Box<dyn Object>> = vec![];
 
-    // Textured sphere.
-    world.push(Box::new(rotate_y(
-        23.,
-        Sphere {
-            center: look_at,
-            radius: 60.,
-            material: Material::DiffuseLight {
-                emission: texture::image_texture("assets/jasmine.png").unwrap(),
-                brightness: 1.,
+        // Textured sphere.
+        world.push(Box::new(rotate_y(
+            23.,
+            Sphere {
+                center: look_at,
+                radius: 60.,
+                material: Material::DiffuseLight {
+                    emission: texture::image_texture("assets/jasmine.png").unwrap(),
+                    brightness: 1.,
+                },
             },
-        },
-    )));
+        )));
 
-    // let ground = Material::Lambertian {
-    //     albedo: texture::checker(
-    //         texture::constant(Vec3(255., 253., 237.).map(|x| x / 255.)),
-    //         texture::constant(Vec3(237., 191., 163.).map(|x| x / 255.)),
-    //         0.02,
-    //     ),
-    // };
-    // world.push(Box::new(Sphere {
-    //     center: Vec3(0., -10000., 0.),
-    //     radius: 10000.,
-    //     material: ground,
-    // }));
-    //
-    world.push(Box::new(rotate_y(
-        190.,
-        FlipNormals(Sphere {
-            center: Vec3(0., 0., 0.),
-            radius: 100000.,
+        // let ground = Material::Lambertian {
+        //     albedo: texture::checker(
+        //         texture::constant(Vec3(255., 253., 237.).map(|x| x / 255.)),
+        //         texture::constant(Vec3(237., 191., 163.).map(|x| x / 255.)),
+        //         0.02,
+        //     ),
+        // };
+        // world.push(Box::new(Sphere {
+        //     center: Vec3(0., -10000., 0.),
+        //     radius: 10000.,
+        //     material: ground,
+        // }));
+        //
+        world.push(Box::new(rotate_y(
+            190.,
+            FlipNormals(Sphere {
+                center: Vec3(0., 0., 0.),
+                radius: 100000.,
+                material: Material::DiffuseLight {
+                    // emission: texture::constant(Vec3(1., 1., 1.)),
+                    // emission: texture::image_texture("assets/earthmap.jpg").unwrap(),
+                    emission: texture::matte(0.000091),
+                    // emission: texture::perlin(0.00002),
+                    brightness: 2.,
+                },
+            }),
+        )));
+
+        // Make light.
+        world.push(Box::new(Rect {
+            orthogonal_to: StaticX,
+            range0: -123. ..423.,
+            range1: -112. ..412.,
+            k: 950.,
             material: Material::DiffuseLight {
-                // emission: texture::constant(Vec3(1., 1., 1.)),
-                // emission: texture::image_texture("assets/earthmap.jpg").unwrap(),
-                emission: texture::matte(0.000091),
-                // emission: texture::perlin(0.00002),
-                brightness: 2.,
+                // emission: texture::constant(Vec3(227., 193., 111.).map(|x| x / 255.)),
+                emission: texture::constant(Vec3::from(0.5)),
+                brightness: 20.,
             },
-        }),
-    )));
-
-    // Make light.
-    world.push(Box::new(Rect {
-        orthogonal_to: StaticX,
-        range0: -123. ..423.,
-        range1: -112. ..412.,
-        k: 950.,
-        material: Material::DiffuseLight {
-            // emission: texture::constant(Vec3(227., 193., 111.).map(|x| x / 255.)),
-            emission: texture::constant(Vec3::from(0.5)),
-            brightness: 20.,
-        },
-    }));
-
+        }));
+        world
+    };
     (world, camera, exposure)
 }
 
@@ -322,7 +325,7 @@ pub fn book_final_scene(
         center: Vec3(400., 200., 400.),
         radius: 100.,
         material: Material::Lambertian {
-            albedo: texture::image_texture("assets/earthmap.jpg").unwrap(),
+            albedo: texture::image_texture("assets/earthmap.png").unwrap(),
         },
     }));
 
@@ -356,7 +359,7 @@ pub fn book_final_scene(
         boundary: Sphere {
             center: Vec3::default(),
             radius: 5000.,
-            material: glass.clone(), // doesn't matter
+            material: glass, // doesn't matter
         },
         density: 0.0001,
         material: Material::Isotropic {

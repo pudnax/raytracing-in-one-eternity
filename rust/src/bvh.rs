@@ -61,7 +61,7 @@ impl Bvh {
         match objs.len() {
             0 => panic!("Can't create a BVH from zero objects."),
             1 => Bvh {
-                bounding_box: objs[0].bounding_box(exposure.clone()),
+                bounding_box: objs[0].bounding_box(exposure),
                 size: 1,
                 contents: BvhContents::Leaf(objs.pop().unwrap()),
             },
@@ -71,7 +71,7 @@ impl Bvh {
                     objs.drain(objs.len() / 2..).collect(),
                     exposure.clone(),
                 ));
-                let left = Box::new(Bvh::new(objs, exposure.clone()));
+                let left = Box::new(Bvh::new(objs, exposure));
 
                 Bvh {
                     bounding_box: left.bounding_box.merge(right.bounding_box),

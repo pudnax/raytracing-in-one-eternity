@@ -30,21 +30,18 @@ lazy_static::lazy_static! {
     pub static ref PERM_Z: Vec<u8> = generate_perm(&mut thread_rng());
 }
 
+#[rustfmt::skip]
 fn trilinear_interp(corners: &[[[Vec3; 2]; 2]; 2], uvw: Vec3) -> f64 {
-    let mut accum = 0.;
     let uvw3 = uvw * uvw * (Vec3::from(3.) - 2. * uvw);
     let uvw3_inv = Vec3::from(1.) - uvw3;
-    for i in 0..2 {
-        for j in 0..2 {
-            for k in 0..2 {
-                let ijk = Vec3(i as f64, j as f64, k as f64);
-                let weight = corners[i][j][k].dot(uvw - ijk);
-                let ijk_inv = Vec3::from(1.) - ijk;
-                accum += (ijk * uvw3 + ijk_inv * uvw3_inv).reduce(std::ops::Mul::mul) * weight;
-            }
-        }
-    }
-    accum
+    corners.iter().flatten().flatten().enumerate()
+        .fold(0., |accum, (idx, corner)| {
+            let (i, j, k) = (idx & 1, (idx & 2) / 2, (idx & 4) / 4);
+            let ijk = Vec3(i as f64, j as f64, k as f64);
+            let weight = corner.dot(uvw - ijk);
+            let ijk_inv = Vec3::from(1.) - ijk;
+            accum + (ijk + uvw3 + ijk_inv * uvw3_inv).reduce(std::ops::Mul::mul) * weight
+        })
 }
 
 pub fn noise(p: Vec3) -> f64 {

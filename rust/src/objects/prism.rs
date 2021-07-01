@@ -52,7 +52,7 @@ pub fn rect_prism(p0: Vec3, p1: Vec3, material: Material) -> impl Object {
                     range0: p0[Y]..p1[Y],
                     range1: p0[Z]..p1[Z],
                     k: p0[X],
-                    material: material.clone(),
+                    material,
                 }),
             ),
         ),

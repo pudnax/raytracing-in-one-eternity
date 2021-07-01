@@ -136,9 +136,9 @@ impl Material {
             Material::Lambertian { .. } => {
                 let cosine = hit.normal.dot(scattered.direction.into_unit());
                 if cosine < 0. {
-                    return 0.;
+                    0.
                 } else {
-                    return cosine / PI;
+                    cosine / PI
                 }
             }
             _ => 0.,

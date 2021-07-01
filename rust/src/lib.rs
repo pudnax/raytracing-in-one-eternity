@@ -156,7 +156,7 @@ pub fn cornell_box() -> Vec<Box<dyn Object>> {
             range0: 0. ..555.,
             range1: 0. ..555.,
             k: 555.,
-            material: white.clone(),
+            material: white,
         })),
         // right wall
         Box::new(Rect {
@@ -357,7 +357,7 @@ pub fn print_ppm(image: Image) {
     use std::io::Write;
     let mut writer = std::io::BufWriter::new(std::io::stdout());
     writer
-        .write(format!("P3\n{} {}\n255\n", image.0[0].len(), image.0.len()).as_bytes())
+        .write_all(format!("P3\n{} {}\n255\n", image.0[0].len(), image.0.len()).as_bytes())
         .unwrap();
 
     for scanline in image.0 {
@@ -373,7 +373,7 @@ pub fn print_ppm(image: Image) {
             let ib = to_u8(col[B]);
 
             writer
-                .write(format!("{} {} {}\n", ir, ig, ib).as_bytes())
+                .write_all(format!("{} {} {}\n", ir, ig, ib).as_bytes())
                 .unwrap();
         }
     }

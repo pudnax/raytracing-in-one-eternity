@@ -17,6 +17,7 @@ pub struct Camera {
 }
 
 impl Camera {
+    #[allow(clippy::too_many_arguments)]
     pub fn look(
         look_from: Vec3,
         look_at: Vec3,

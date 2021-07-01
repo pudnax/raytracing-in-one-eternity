@@ -28,6 +28,7 @@ fn get_sphere_uv(p: Vec3) -> (f64, f64) {
 
 impl Object for Sphere {
     #[inline]
+    #[allow(clippy::many_single_char_names)]
     fn hit<'o>(
         &'o self,
         ray: &Ray,

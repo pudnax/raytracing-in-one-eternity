@@ -1,7 +1,7 @@
 use rand::prelude::*;
 
 fn main() {
-    let n = 1000_000;
+    let n = 1_000_000;
     let mut sum = 0.0;
 
     let mut rng = thread_rng();

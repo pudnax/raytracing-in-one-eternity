@@ -73,6 +73,7 @@ impl StaticAxis for StaticZ {
 
 impl<A: StaticAxis> Object for Rect<A> {
     #[inline]
+    #[allow(clippy::many_single_char_names)]
     fn hit<'o>(
         &'o self,
         ray: &Ray,
